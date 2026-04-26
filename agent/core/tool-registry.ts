@@ -8,6 +8,7 @@ import {
 } from "@/agent/core/tools";
 import { fetchWebPageTool } from "@/agent/tools/fetch-web-page";
 import { createPrintfulMockupTaskTool } from "@/agent/tools/create-printful-mockup-task";
+import { createPrintfulStoreProductTool } from "@/agent/tools/create-printful-store-product";
 import { getPrintfulMockupTaskTool } from "@/agent/tools/get-printful-mockup-task";
 import { getPrintfulProductsTool } from "@/agent/tools/get-printful-products";
 import { getPrintfulVariantPricesTool } from "@/agent/tools/get-printful-variant-prices";
@@ -16,6 +17,7 @@ import { getTikTokAffiliateTool } from "@/agent/tools/get-tiktok-affiliate";
 const REGISTERED_TOOLS = [
   fetchWebPageTool,
   createPrintfulMockupTaskTool,
+  createPrintfulStoreProductTool,
   getPrintfulMockupTaskTool,
   getPrintfulProductsTool,
   getPrintfulVariantPricesTool,

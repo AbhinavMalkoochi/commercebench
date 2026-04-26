@@ -284,11 +284,22 @@ export interface PrintfulDraftExecutionMockup {
   failureReasons: string[];
 }
 
+export interface PrintfulDraftExecutionStoreProduct {
+  productId: number;
+  externalProductId: string;
+  name: string;
+  variantCount: number;
+  syncedCount: number;
+  sourceUrl: string;
+  thumbnailUrl?: string;
+}
+
 export interface PrintfulDraftExecutionResult {
   status: "ready" | "skipped" | "blocked";
   reasoning: string;
   selection?: PrintfulDraftInspectionSelection;
   mockup?: PrintfulDraftExecutionMockup;
+  storeProduct?: PrintfulDraftExecutionStoreProduct;
 }
 
 export interface BudgetLedgerEntry {

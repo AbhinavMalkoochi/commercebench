@@ -16,12 +16,17 @@ interface AgentLoopProductCreationConfig {
     storeId: string;
     mockupStyleIds: number[];
     artworkUrl: string;
-    approvedToolNames?: Array<"create_printful_mockup_task" | "get_printful_mockup_task">;
+    approvedToolNames?: Array<
+      "create_printful_mockup_task" |
+      "get_printful_mockup_task" |
+      "create_printful_store_product"
+    >;
     placement?: string;
     technique?: string;
     printAreaType?: string;
     orientation?: "vertical" | "horizontal";
     pollTask?: boolean;
+    createStoreProduct?: boolean;
     fetchImpl?: typeof fetch;
   };
 }
@@ -119,6 +124,7 @@ export class AgentLoop {
             printAreaType: this.productCreation.printfulExecution.printAreaType,
             orientation: this.productCreation.printfulExecution.orientation,
             pollTask: this.productCreation.printfulExecution.pollTask,
+            createStoreProduct: this.productCreation.printfulExecution.createStoreProduct,
             toolContext: {
               now,
               fetchImpl: this.productCreation.printfulExecution.fetchImpl,

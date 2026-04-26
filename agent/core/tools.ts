@@ -168,6 +168,30 @@ export interface GetPrintfulMockupTaskOutput {
   failureReasons: string[];
 }
 
+export interface CreatePrintfulStoreProductInput {
+  storeId: string;
+  externalProductId: string;
+  externalVariantId: string;
+  name: string;
+  variantId: number;
+  retailPrice: number;
+  artworkUrl: string;
+  thumbnailUrl?: string;
+  sku?: string;
+  pageUrl?: string;
+}
+
+export interface CreatePrintfulStoreProductOutput {
+  fetchedAt: string;
+  sourceUrl: string;
+  productId: number;
+  externalProductId: string;
+  name: string;
+  variantCount: number;
+  syncedCount: number;
+  thumbnailUrl?: string;
+}
+
 export type AgentToolMap = {
   fetch_web_page: {
     input: FetchWebPageInput;
@@ -188,6 +212,10 @@ export type AgentToolMap = {
   get_printful_mockup_task: {
     input: GetPrintfulMockupTaskInput;
     output: GetPrintfulMockupTaskOutput;
+  };
+  create_printful_store_product: {
+    input: CreatePrintfulStoreProductInput;
+    output: CreatePrintfulStoreProductOutput;
   };
   get_tiktok_affiliate: {
     input: GetTikTokAffiliateInput;

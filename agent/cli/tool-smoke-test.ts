@@ -71,6 +71,17 @@ const PRINTFUL_MOCKUP_GET_FIXTURE = {
   failure_reasons: [],
 };
 
+const PRINTFUL_STORE_PRODUCT_FIXTURE = {
+  result: {
+    id: 7001,
+    external_id: "commercebench-graphic-tshirts-4011",
+    name: "Graphic T-Shirts launch draft",
+    variants: 1,
+    synced: 1,
+    thumbnail_url: "https://example.com/mockup.png",
+  },
+};
+
 const FIXTURE_HTML = `
   <main>
     <article>
@@ -129,6 +140,15 @@ async function main(): Promise<void> {
 
     if (url.includes("/v2/mockup-tasks")) {
       return new Response(JSON.stringify(PRINTFUL_MOCKUP_CREATE_FIXTURE), {
+        status: 200,
+        headers: {
+          "content-type": "application/json",
+        },
+      });
+    }
+
+    if (url.includes("/store/products")) {
+      return new Response(JSON.stringify(PRINTFUL_STORE_PRODUCT_FIXTURE), {
         status: 200,
         headers: {
           "content-type": "application/json",
@@ -221,6 +241,24 @@ async function main(): Promise<void> {
     },
   );
 
+  const storeProduct = await executor.execute(
+    "create_printful_store_product",
+    {
+      storeId: "store-123",
+      externalProductId: "commercebench-graphic-tshirts-4011",
+      externalVariantId: "commercebench-graphic-tshirts-4011-variant",
+      name: "Graphic T-Shirts launch draft",
+      variantId: 4011,
+      retailPrice: 29.99,
+      artworkUrl: "https://example.com/design.png",
+      thumbnailUrl: "https://example.com/mockup.png",
+    },
+    {
+      now: new Date("2026-04-26T00:00:00.000Z"),
+      fetchImpl: productCreationFetch,
+    },
+  );
+
   const affiliateResult = await executor.execute(
     "get_tiktok_affiliate",
     {
@@ -234,9 +272,9 @@ async function main(): Promise<void> {
     },
   );
 
-  assert.equal(registry.listTools().length, 6);
+  assert.equal(registry.listTools().length, 7);
   assert.equal(registry.listToolsForStage("research").length, 1);
-  assert.equal(registry.listToolsForStage("product_creation").length, 4);
+  assert.equal(registry.listToolsForStage("product_creation").length, 5);
   assert.equal(fetchResult.title, "Research Fixture");
   assert.equal(fetchResult.text.includes("Current page text"), true);
   assert.equal(printfulProducts.products[0]?.name, "Unisex Staple T-Shirt");
@@ -244,6 +282,7 @@ async function main(): Promise<void> {
   assert.equal(printfulPrice.price, 12.95);
   assert.equal(mockupTask.taskId, 597350033);
   assert.equal(mockupTaskResult.assets[0]?.mockupUrl, "https://example.com/mockup.png");
+  assert.equal(storeProduct.productId, 7001);
   assert.equal(affiliateResult.affiliates.length, 2);
   assert.equal(affiliateResult.affiliates[0]?.handle, "@kitchenfinds");
   assert.equal(affiliateResult.affiliates[1]?.category, "beauty");

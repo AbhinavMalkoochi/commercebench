@@ -59,6 +59,17 @@ const PRINTFUL_MOCKUP_GET_FIXTURE = {
   failure_reasons: [],
 };
 
+const PRINTFUL_STORE_PRODUCT_FIXTURE = {
+  result: {
+    id: 7001,
+    external_id: "commercebench-graphic-tshirts-4011",
+    name: "Graphic T-Shirts launch draft",
+    variants: 1,
+    synced: 1,
+    thumbnail_url: "https://example.com/mockup.png",
+  },
+};
+
 function createSignal(input: {
   label: string;
   tags: string[];
@@ -159,6 +170,13 @@ async function main(): Promise<void> {
       });
     }
 
+    if (url.includes("/store/products")) {
+      return new Response(JSON.stringify(PRINTFUL_STORE_PRODUCT_FIXTURE), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    }
+
     if (url.includes("/prices")) {
       return new Response(JSON.stringify(PRINTFUL_PRICES_FIXTURE), {
         status: 200,
@@ -180,8 +198,13 @@ async function main(): Promise<void> {
     storeId: "store-123",
     mockupStyleIds: [100],
     artworkUrl: "https://example.com/design.png",
-    approvedToolNames: ["create_printful_mockup_task", "get_printful_mockup_task"],
+    approvedToolNames: [
+      "create_printful_mockup_task",
+      "get_printful_mockup_task",
+      "create_printful_store_product",
+    ],
     pollTask: true,
+    createStoreProduct: true,
     toolContext: {
       now: new Date("2026-04-26T00:00:00.000Z"),
       fetchImpl,
@@ -192,6 +215,7 @@ async function main(): Promise<void> {
   assert.equal(result.selection?.productId, 71);
   assert.equal(result.mockup?.taskId, 597350033);
   assert.equal(result.mockup?.assets[0]?.mockupUrl, "https://example.com/mockup.png");
+  assert.equal(result.storeProduct?.productId, 7001);
 
   console.log("Printful draft executor smoke test passed.");
   console.log(`Selection: ${result.selection?.productName} / ${result.selection?.variantName}`);

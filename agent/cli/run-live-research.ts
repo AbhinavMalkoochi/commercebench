@@ -46,6 +46,8 @@ async function main(): Promise<void> {
   const printfulArtworkUrl = process.env.PRINTFUL_ARTWORK_URL;
   const printfulMockupStyleIds = parseNumericList(process.env.PRINTFUL_MOCKUP_STYLE_IDS);
   const autoApproveMockups = process.env.PRINTFUL_AUTO_APPROVE_MOCKUPS === "1";
+  const createProductDraft = process.env.PRINTFUL_CREATE_PRODUCT_DRAFT === "1";
+  const autoApproveProductDraft = process.env.PRINTFUL_AUTO_APPROVE_PRODUCT_DRAFT === "1";
 
   const loop = new AgentLoop(
     new FileStateStore(`${process.cwd()}/.agent-state/live`),
@@ -65,10 +67,12 @@ async function main(): Promise<void> {
               storeId: printfulStoreId,
               artworkUrl: printfulArtworkUrl,
               mockupStyleIds: printfulMockupStyleIds,
-              approvedToolNames: autoApproveMockups
-                ? ["create_printful_mockup_task", "get_printful_mockup_task"]
-                : undefined,
+              approvedToolNames: [
+                ...(autoApproveMockups ? ["create_printful_mockup_task", "get_printful_mockup_task"] as const : []),
+                ...(autoApproveProductDraft ? ["create_printful_store_product"] as const : []),
+              ],
               pollTask: true,
+              createStoreProduct: createProductDraft,
             }
           : undefined,
     },
