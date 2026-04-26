@@ -5,12 +5,20 @@ import { withRetries } from "@/agent/infrastructure/retry";
 
 function extractStructuredText(html: string): string {
   const $ = load(html);
+  const seen = new Set<string>();
   const lines: string[] = [];
 
-  $("h1, h2, h3, h4, p, li").each((_, element) => {
+  $("script, style, noscript, svg, header, footer, nav, aside, form").remove();
+
+  const article = $("article").first();
+  const main = $("main").first();
+  const root = article.length > 0 ? article : main.length > 0 ? main : $("body");
+
+  root.find("h1, h2, h3, h4, p, li").each((_, element) => {
     const line = $(element).text().replace(/\s+/g, " ").trim();
 
-    if (line.length > 0) {
+    if (line.length > 0 && !seen.has(line)) {
+      seen.add(line);
       lines.push(line);
     }
   });
