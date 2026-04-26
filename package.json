@@ -19,6 +19,7 @@
     "agent:product:test": "tsx agent/cli/product-creation-smoke-test.ts",
     "agent:product:inspect:test": "tsx agent/cli/printful-draft-inspector-smoke-test.ts",
     "agent:product:execute:test": "tsx agent/cli/printful-draft-executor-smoke-test.ts",
+    "agent:cj:inspect:test": "tsx agent/cli/cj-draft-inspector-smoke-test.ts",
     "agent:listing:test": "tsx agent/cli/listing-draft-smoke-test.ts",
     "agent:product:plan-live": "tsx agent/cli/plan-product-from-live-cycle.ts"
   },

@@ -192,6 +192,26 @@ export interface CreatePrintfulStoreProductOutput {
   thumbnailUrl?: string;
 }
 
+export interface CjProductSummary {
+  productId: string;
+  name: string;
+  sku?: string;
+  price?: number;
+}
+
+export interface QueryCjProductsInput {
+  accessToken: string;
+  name?: string;
+  sku?: string;
+  pageUrl?: string;
+}
+
+export interface QueryCjProductsOutput {
+  fetchedAt: string;
+  sourceUrl: string;
+  products: CjProductSummary[];
+}
+
 export type AgentToolMap = {
   fetch_web_page: {
     input: FetchWebPageInput;
@@ -216,6 +236,10 @@ export type AgentToolMap = {
   create_printful_store_product: {
     input: CreatePrintfulStoreProductInput;
     output: CreatePrintfulStoreProductOutput;
+  };
+  query_cj_products: {
+    input: QueryCjProductsInput;
+    output: QueryCjProductsOutput;
   };
   get_tiktok_affiliate: {
     input: GetTikTokAffiliateInput;

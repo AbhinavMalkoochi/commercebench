@@ -321,6 +321,20 @@ export interface ListingDraftResult {
   artifact?: ListingDraftArtifact;
 }
 
+export interface CjDraftInspectionSelection {
+  productId: string;
+  name: string;
+  sku?: string;
+  price?: number;
+  sourceUrl: string;
+}
+
+export interface CjDraftInspectionResult {
+  status: "ready" | "skipped" | "blocked";
+  reasoning: string;
+  selection?: CjDraftInspectionSelection;
+}
+
 export interface BudgetLedgerEntry {
   id: string;
   action: string;

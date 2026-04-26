@@ -82,6 +82,17 @@ const PRINTFUL_STORE_PRODUCT_FIXTURE = {
   },
 };
 
+const CJ_PRODUCTS_FIXTURE = {
+  products: [
+    {
+      product_id: "cj-123",
+      name: "Heatless Hair Curler Set",
+      sku: "CJ-HAIR-001",
+      price: 6.5,
+    },
+  ],
+};
+
 const FIXTURE_HTML = `
   <main>
     <article>
@@ -149,6 +160,15 @@ async function main(): Promise<void> {
 
     if (url.includes("/store/products")) {
       return new Response(JSON.stringify(PRINTFUL_STORE_PRODUCT_FIXTURE), {
+        status: 200,
+        headers: {
+          "content-type": "application/json",
+        },
+      });
+    }
+
+    if (url.includes("/api2.0/v1/product/query")) {
+      return new Response(JSON.stringify(CJ_PRODUCTS_FIXTURE), {
         status: 200,
         headers: {
           "content-type": "application/json",
@@ -259,6 +279,18 @@ async function main(): Promise<void> {
     },
   );
 
+  const cjProducts = await executor.execute(
+    "query_cj_products",
+    {
+      accessToken: "cj-token",
+      name: "Heatless Hair Curlers beauty hair personalcare heatless",
+    },
+    {
+      now: new Date("2026-04-26T00:00:00.000Z"),
+      fetchImpl: productCreationFetch,
+    },
+  );
+
   const affiliateResult = await executor.execute(
     "get_tiktok_affiliate",
     {
@@ -272,9 +304,9 @@ async function main(): Promise<void> {
     },
   );
 
-  assert.equal(registry.listTools().length, 7);
+  assert.equal(registry.listTools().length, 8);
   assert.equal(registry.listToolsForStage("research").length, 1);
-  assert.equal(registry.listToolsForStage("product_creation").length, 5);
+  assert.equal(registry.listToolsForStage("product_creation").length, 6);
   assert.equal(fetchResult.title, "Research Fixture");
   assert.equal(fetchResult.text.includes("Current page text"), true);
   assert.equal(printfulProducts.products[0]?.name, "Unisex Staple T-Shirt");
@@ -283,6 +315,7 @@ async function main(): Promise<void> {
   assert.equal(mockupTask.taskId, 597350033);
   assert.equal(mockupTaskResult.assets[0]?.mockupUrl, "https://example.com/mockup.png");
   assert.equal(storeProduct.productId, 7001);
+  assert.equal(cjProducts.products[0]?.productId, "cj-123");
   assert.equal(affiliateResult.affiliates.length, 2);
   assert.equal(affiliateResult.affiliates[0]?.handle, "@kitchenfinds");
   assert.equal(affiliateResult.affiliates[1]?.category, "beauty");

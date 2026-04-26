@@ -13,6 +13,7 @@ import { getPrintfulMockupTaskTool } from "@/agent/tools/get-printful-mockup-tas
 import { getPrintfulProductsTool } from "@/agent/tools/get-printful-products";
 import { getPrintfulVariantPricesTool } from "@/agent/tools/get-printful-variant-prices";
 import { getTikTokAffiliateTool } from "@/agent/tools/get-tiktok-affiliate";
+import { queryCjProductsTool } from "@/agent/tools/query-cj-products";
 
 const REGISTERED_TOOLS = [
   fetchWebPageTool,
@@ -22,6 +23,7 @@ const REGISTERED_TOOLS = [
   getPrintfulProductsTool,
   getPrintfulVariantPricesTool,
   getTikTokAffiliateTool,
+  queryCjProductsTool,
 ] as const satisfies readonly AnyAgentToolDefinition[];
 
 export class StaticToolRegistry implements AgentToolRegistry {
