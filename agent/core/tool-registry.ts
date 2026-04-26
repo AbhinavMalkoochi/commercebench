@@ -3,17 +3,23 @@ import {
   AgentToolMap,
   AgentToolName,
   AgentToolRegistry,
+  AgentRuntimeStage,
   AnyAgentToolDefinition,
 } from "@/agent/core/tools";
+import { fetchWebPageTool } from "@/agent/tools/fetch-web-page";
 import { getTikTokAffiliateTool } from "@/agent/tools/get-tiktok-affiliate";
 
-const REGISTERED_TOOLS = [getTikTokAffiliateTool] as const satisfies readonly AnyAgentToolDefinition[];
+const REGISTERED_TOOLS = [fetchWebPageTool, getTikTokAffiliateTool] as const satisfies readonly AnyAgentToolDefinition[];
 
 export class StaticToolRegistry implements AgentToolRegistry {
   private readonly toolMap = new Map(REGISTERED_TOOLS.map((tool) => [tool.name, tool]));
 
   listTools(): AnyAgentToolDefinition[] {
     return [...REGISTERED_TOOLS];
+  }
+
+  listToolsForStage(stage: AgentRuntimeStage): AnyAgentToolDefinition[] {
+    return REGISTERED_TOOLS.filter((tool) => tool.stage === stage);
   }
 
   getTool<Name extends AgentToolName>(

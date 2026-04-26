@@ -47,7 +47,24 @@ export interface GetTikTokAffiliateOutput {
   notes: string[];
 }
 
+export interface FetchWebPageInput {
+  url: string;
+  maxCharacters?: number;
+}
+
+export interface FetchWebPageOutput {
+  url: string;
+  fetchedAt: string;
+  statusCode: number;
+  title?: string;
+  text: string;
+}
+
 export type AgentToolMap = {
+  fetch_web_page: {
+    input: FetchWebPageInput;
+    output: FetchWebPageOutput;
+  };
   get_tiktok_affiliate: {
     input: GetTikTokAffiliateInput;
     output: GetTikTokAffiliateOutput;
@@ -62,5 +79,6 @@ export type AnyAgentToolDefinition = {
 
 export interface AgentToolRegistry {
   listTools(): AnyAgentToolDefinition[];
+  listToolsForStage(stage: AgentRuntimeStage): AnyAgentToolDefinition[];
   getTool<Name extends AgentToolName>(name: Name): AgentToolDefinition<Name, AgentToolMap[Name]["input"], AgentToolMap[Name]["output"]>;
 }
