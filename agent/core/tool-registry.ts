@@ -22,6 +22,7 @@ import { queryCjProductsTool } from "@/agent/tools/query-cj-products";
 import { refreshCjAccessTokenTool } from "@/agent/tools/refresh-cj-access-token";
 import { refreshTikTokAccessTokenTool } from "@/agent/tools/refresh-tiktok-access-token";
 import { runRemoteShellCommandTool } from "@/agent/tools/run-remote-shell-command";
+import { searchTikTokOrdersTool } from "@/agent/tools/search-tiktok-orders";
 import { searchTikTokProductsTool } from "@/agent/tools/search-tiktok-products";
 
 const REGISTERED_TOOLS = [
@@ -41,6 +42,7 @@ const REGISTERED_TOOLS = [
   refreshCjAccessTokenTool,
   refreshTikTokAccessTokenTool,
   runRemoteShellCommandTool,
+  searchTikTokOrdersTool,
   searchTikTokProductsTool,
 ] as const satisfies readonly AnyAgentToolDefinition[];
 

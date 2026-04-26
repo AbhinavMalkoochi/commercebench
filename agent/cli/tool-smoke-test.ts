@@ -196,6 +196,31 @@ const TIKTOK_SEARCH_PRODUCTS_FIXTURE = {
   },
 };
 
+const TIKTOK_SEARCH_ORDERS_FIXTURE = {
+  code: 0,
+  message: "success",
+  data: {
+    next_page_token: "",
+    orders: [
+      {
+        id: "tts-order-1",
+        status: "AWAITING_SHIPMENT",
+        create_time: 1714089600,
+        update_time: 1714093200,
+        buyer_email: "buyer@example.com",
+        recipient_address: {
+          full_address: "123 Main St, Los Angeles, CA 90001",
+        },
+        payment: {
+          currency: "USD",
+          total_amount: "14.99",
+        },
+        line_items: [{ id: "line-1" }],
+      },
+    ],
+  },
+};
+
 const CJ_PRODUCTS_FIXTURE = {
   products: [
     {
@@ -312,6 +337,15 @@ async function main(): Promise<void> {
 
     if (url.includes("/product/202502/products/search")) {
       return new Response(JSON.stringify(TIKTOK_SEARCH_PRODUCTS_FIXTURE), {
+        status: 200,
+        headers: {
+          "content-type": "application/json",
+        },
+      });
+    }
+
+    if (url.includes("/order/202309/orders/search")) {
+      return new Response(JSON.stringify(TIKTOK_SEARCH_ORDERS_FIXTURE), {
         status: 200,
         headers: {
           "content-type": "application/json",
@@ -555,6 +589,22 @@ async function main(): Promise<void> {
     },
   );
 
+  const tiktokOrders = await executor.execute(
+    "search_tiktok_orders",
+    {
+      appKey: "tt-app-key",
+      appSecret: "tt-app-secret",
+      accessToken: "tts-access-token",
+      shopCipher: "cipher-123",
+      orderStatus: "AWAITING_SHIPMENT",
+      pageSize: 10,
+    },
+    {
+      now: new Date("2026-04-26T00:00:00.000Z"),
+      fetchImpl: productCreationFetch,
+    },
+  );
+
   const storeProduct = await executor.execute(
     "create_printful_store_product",
     {
@@ -618,11 +668,11 @@ async function main(): Promise<void> {
     }
   }
 
-  assert.equal(registry.listTools().length, 17);
+  assert.equal(registry.listTools().length, 18);
   assert.equal(registry.listToolsForStage("research").length, 1);
   assert.equal(registry.listToolsForStage("product_creation").length, 10);
   assert.equal(registry.listToolsForStage("listing").length, 4);
-  assert.equal(registry.listToolsForStage("monitoring").length, 1);
+  assert.equal(registry.listToolsForStage("monitoring").length, 2);
   assert.equal(fetchResult.title, "Research Fixture");
   assert.equal(fetchResult.text.includes("Current page text"), true);
   assert.equal(printfulProducts.products[0]?.name, "Unisex Staple T-Shirt");
@@ -638,6 +688,8 @@ async function main(): Promise<void> {
   assert.equal(tiktokRefreshedToken.accessToken, "tts-access-token-refreshed");
   assert.equal(tiktokAuthorizedShops.shops[0]?.cipher, "cipher-123");
   assert.equal(tiktokProducts.products[0]?.title, "Hydrocolloid Pimple Patches");
+  assert.equal(tiktokOrders.orders[0]?.id, "tts-order-1");
+  assert.equal(tiktokOrders.orders[0]?.status, "AWAITING_SHIPMENT");
   assert.equal(mockupTaskResult.assets[0]?.mockupUrl, "https://example.com/mockup.png");
   assert.equal(storeProduct.productId, 7001);
   assert.equal(cjProducts.products[0]?.productId, "cj-123");

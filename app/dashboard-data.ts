@@ -1,6 +1,7 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 
+import { readRecentTikTokWebhooks } from "@/app/tiktok-webhook-store";
 import { AgentCycleRecord, StoredAgentState } from "@/agent/core/types";
 
 const LIVE_STATE_ROOT = path.join(process.cwd(), ".agent-state", "live");
@@ -95,10 +96,11 @@ function summarizeEnvironment() {
 }
 
 export async function getDashboardData() {
-  const [state, cycles, traces] = await Promise.all([
+  const [state, cycles, traces, webhooks] = await Promise.all([
     readJsonFile<StoredAgentState>(path.join(LIVE_STATE_ROOT, "state.json")),
     readRecentCycleRecords(6),
     readRecentTraces(4),
+    readRecentTikTokWebhooks(8),
   ]);
 
   return {
@@ -109,6 +111,7 @@ export async function getDashboardData() {
     },
     cycles,
     traces,
+    webhooks,
     environment: summarizeEnvironment(),
     hosting: {
       dashboardCommand: "npm run dev",

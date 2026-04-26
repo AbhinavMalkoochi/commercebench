@@ -153,6 +153,39 @@ export interface RunRemoteShellCommandOutput {
   durationMs: number;
 }
 
+export interface TikTokOrderSummary {
+  id: string;
+  status: string;
+  createTime: number;
+  updateTime: number;
+  buyerEmail?: string;
+  recipientFullAddress?: string;
+  paymentCurrency?: string;
+  paymentTotalAmount?: string;
+  lineItemCount: number;
+}
+
+export interface SearchTikTokOrdersInput {
+  appKey: string;
+  appSecret: string;
+  accessToken: string;
+  shopCipher: string;
+  pageSize?: number;
+  pageToken?: string;
+  orderStatus?: "UNPAID" | "ON_HOLD" | "AWAITING_SHIPMENT" | "PARTIALLY_SHIPPING" | "AWAITING_COLLECTION" | "IN_TRANSIT" | "DELIVERED" | "COMPLETED" | "CANCELLED";
+  createTimeGe?: number;
+  createTimeLt?: number;
+  updateTimeGe?: number;
+}
+
+export interface SearchTikTokOrdersOutput {
+  fetchedAt: string;
+  sourceUrl: string;
+  orders: TikTokOrderSummary[];
+  nextPageToken?: string;
+  hasMore: boolean;
+}
+
 export interface FetchWebPageInput {
   url: string;
   maxCharacters?: number;
@@ -477,6 +510,10 @@ export type AgentToolMap = {
   run_remote_shell_command: {
     input: RunRemoteShellCommandInput;
     output: RunRemoteShellCommandOutput;
+  };
+  search_tiktok_orders: {
+    input: SearchTikTokOrdersInput;
+    output: SearchTikTokOrdersOutput;
   };
 };
 

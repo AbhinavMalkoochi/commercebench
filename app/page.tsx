@@ -180,6 +180,37 @@ export default async function Home() {
             )) : <p className="empty-state">No trace directories found yet.</p>}
           </div>
         </article>
+
+        <article className="panel panel-wide">
+          <div className="panel-header">
+            <div>
+              <p className="eyebrow">TikTok Webhooks</p>
+              <h2>Recent order-status payloads</h2>
+            </div>
+          </div>
+          <div className="timeline">
+            {data.webhooks.length > 0 ? data.webhooks.map((webhook) => {
+              const payloadData = webhook.payload.data as { order_id?: string; order_status?: string } | undefined;
+
+              return (
+                <article className="timeline-item" key={webhook.id}>
+                  <div className="timeline-marker" />
+                  <div className="timeline-content">
+                    <div className="timeline-topline">
+                      <strong>{payloadData?.order_id ?? webhook.id}</strong>
+                      <span>{formatTimestamp(webhook.receivedAt)}</span>
+                    </div>
+                    <p>Order status: {payloadData?.order_status ?? "unknown"}</p>
+                    <div className="pill-row">
+                      <span className="pill">type {webhook.type}</span>
+                      <span className="pill">signature {webhook.signature ? "present" : "missing"}</span>
+                    </div>
+                  </div>
+                </article>
+              );
+            }) : <p className="empty-state">No TikTok webhook payloads stored yet.</p>}
+          </div>
+        </article>
       </section>
     </main>
   );
