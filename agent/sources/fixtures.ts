@@ -72,6 +72,9 @@ function fixtureSignal(
   input: {
     label: string;
     summary: string;
+    sourceTitle?: string;
+    sourcePublishedAt?: string;
+    freshnessNote?: string;
     tags: string[];
     freshness: number;
     visualDemo: number;
@@ -93,8 +96,11 @@ function fixtureSignal(
     query: query.query,
     sourceMode: "search_backed",
     sourceUrl: input.sourceUrl,
+    sourceTitle: input.sourceTitle,
+    sourcePublishedAt: input.sourcePublishedAt,
     label: input.label,
     summary: input.summary,
+    freshnessNote: input.freshnessNote,
     tags: input.tags,
     metrics: {
       freshness: input.freshness,
@@ -126,6 +132,8 @@ export class FixtureSearchProvider implements SearchProvider {
             label: "Hydrocolloid Pimple Patches",
             summary: "Creators are posting fast before-and-after skincare clips and makeup-bag routines around pimple patches.",
             tags: ["skincare", "beauty", "routine", "travel"],
+            sourceTitle: "TikTok Creative Center Top Products",
+            freshnessNote: "Current TikTok commerce surface for April 2026.",
             freshness: 0.94,
             visualDemo: 0.95,
             creatorAppeal: 0.9,
@@ -141,6 +149,8 @@ export class FixtureSearchProvider implements SearchProvider {
             label: "Reusable Water Bottles",
             summary: "Hydration content still performs, but the category is crowded unless the product has a niche angle or bundle.",
             tags: ["hydration", "wellness", "travel", "gym"],
+            sourceTitle: "TikTok Creative Center Top Products",
+            freshnessNote: "Current TikTok commerce surface for April 2026.",
             freshness: 0.9,
             visualDemo: 0.8,
             creatorAppeal: 0.74,
@@ -150,6 +160,7 @@ export class FixtureSearchProvider implements SearchProvider {
             seasonality: 0.84,
             confidence: 0.82,
             priceMax: 35,
+            sourceUrl: "https://ads.tiktok.com/business/creativecenter/top-products/pc/en",
           }),
         ];
       case "tiktok_shop_search":
@@ -158,6 +169,8 @@ export class FixtureSearchProvider implements SearchProvider {
             label: "Hydrocolloid Pimple Patches",
             summary: "TikTok Shop listings and videos keep surfacing pimple patches as a fast-conversion beauty product with immediate proof.",
             tags: ["tiktokshop", "skincare", "beauty", "event"],
+            sourceTitle: "TikTok Shop Trending Products",
+            freshnessNote: "Query targets TikTok Shop results for April 2026.",
             freshness: 0.93,
             visualDemo: 0.93,
             creatorAppeal: 0.91,
@@ -167,11 +180,14 @@ export class FixtureSearchProvider implements SearchProvider {
             seasonality: 0.84,
             confidence: 0.9,
             priceMax: 18,
+            sourceUrl: "https://shop.tiktok.com/us",
           }),
           fixtureSignal(plan, 2, {
             label: "Scalp Serum Applicator Tools",
             summary: "Routine-led hair growth content is active, but the category needs more education than quick-fix skincare.",
             tags: ["hair", "routine", "scalp", "beauty"],
+            sourceTitle: "TikTok Shop Trending Products",
+            freshnessNote: "Query targets TikTok Shop results for April 2026.",
             freshness: 0.89,
             visualDemo: 0.79,
             creatorAppeal: 0.84,
@@ -181,6 +197,7 @@ export class FixtureSearchProvider implements SearchProvider {
             seasonality: 0.72,
             confidence: 0.84,
             priceMax: 29,
+            sourceUrl: "https://shop.tiktok.com/us",
           }),
         ];
       case "tiktok_made_me_buy_it_search":
@@ -189,6 +206,9 @@ export class FixtureSearchProvider implements SearchProvider {
             label: "Hydrocolloid Pimple Patches",
             summary: "TikTok-made-me-buy-it roundups keep calling out pimple patches as a cheap, easy impulse purchase with visible results.",
             tags: ["tiktokmademebuyit", "skincare", "beauty", "impulsebuy"],
+            sourceTitle: "TikTok Made Me Buy It Products",
+            sourcePublishedAt: "2026-04-20T00:00:00.000Z",
+            freshnessNote: "Published during April 2026 and tied to ongoing buy-it-now content.",
             freshness: 0.94,
             visualDemo: 0.92,
             creatorAppeal: 0.88,
@@ -198,11 +218,15 @@ export class FixtureSearchProvider implements SearchProvider {
             seasonality: 0.81,
             confidence: 0.9,
             priceMax: 18,
+            sourceUrl: "https://echotik.live/blog/tiktok-shop-q2-2026-trending-products-api-list-viral-items/",
           }),
           fixtureSignal(plan, 2, {
             label: "Portable Bladeless Neck Fans",
             summary: "Seasonal summer products are appearing, but they are more price-sensitive and more crowded than pimple patches.",
             tags: ["summer", "portable", "cooling", "travel"],
+            sourceTitle: "TikTok Made Me Buy It Products",
+            sourcePublishedAt: "2026-04-20T00:00:00.000Z",
+            freshnessNote: "Published during April 2026 and tied to ongoing buy-it-now content.",
             freshness: 0.87,
             visualDemo: 0.84,
             creatorAppeal: 0.78,
@@ -212,6 +236,7 @@ export class FixtureSearchProvider implements SearchProvider {
             seasonality: 0.92,
             confidence: 0.81,
             priceMax: 39,
+            sourceUrl: "https://echotik.live/blog/tiktok-shop-q2-2026-trending-products-api-list-viral-items/",
           }),
         ];
       case "tiktok_hashtag_search":
@@ -220,6 +245,8 @@ export class FixtureSearchProvider implements SearchProvider {
             label: "Hydrocolloid Pimple Patches",
             summary: "Hashtag clusters around makeup bag, overnight fix, and wedding or graduation prep make pimple patches highly reusable in content.",
             tags: ["overnight", "skincare", "graduation", "wedding"],
+            sourceTitle: "TikTok Hashtag Trends",
+            freshnessNote: "Hashtag trend surface for April 2026.",
             freshness: 0.95,
             visualDemo: 0.92,
             creatorAppeal: 0.89,
@@ -229,11 +256,14 @@ export class FixtureSearchProvider implements SearchProvider {
             seasonality: 0.86,
             confidence: 0.91,
             priceMax: 18,
+            sourceUrl: "https://ads.tiktok.com/business/creativecenter/inspiration/popular/hashtag/pc/en",
           }),
           fixtureSignal(plan, 2, {
             label: "Slow-Feeder Dog Bowls",
             summary: "Pet owners are sharing functional pet routine content, but volume is lower than beauty and event-prep niches.",
             tags: ["pet", "routine", "dog", "functional"],
+            sourceTitle: "TikTok Hashtag Trends",
+            freshnessNote: "Hashtag trend surface for April 2026.",
             freshness: 0.86,
             visualDemo: 0.74,
             creatorAppeal: 0.7,
@@ -243,6 +273,7 @@ export class FixtureSearchProvider implements SearchProvider {
             seasonality: 0.75,
             confidence: 0.81,
             priceMax: 28,
+            sourceUrl: "https://ads.tiktok.com/business/creativecenter/inspiration/popular/hashtag/pc/en",
           }),
         ];
       default:

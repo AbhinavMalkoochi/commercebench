@@ -9,6 +9,7 @@ import {
   SourceCapability,
 } from "@/agent/core/types";
 import { buildResearchQueryPlan } from "@/agent/core/query-planner";
+import { filterResearchSignals } from "@/agent/core/research-quality";
 import { buildCandidatePortfolio, countUsefulCandidateSignals } from "@/agent/core/scoring";
 import { SOURCE_CAPABILITIES } from "@/agent/sources/catalog";
 import { FileResearchTrace } from "@/agent/infrastructure/file-research-trace";
@@ -92,7 +93,13 @@ export async function runResearchLoop(
       }
     }),
   );
-  const signals = signalSets.flat();
+  const rawSignals = signalSets.flat();
+  const queryById = new Map(queries.map((query) => [query.id, query]));
+  const { acceptedSignals: signals, report: qualityReport } = filterResearchSignals(
+    rawSignals,
+    queryById,
+    now,
+  );
 
   const candidates = buildCandidatePortfolio(signals);
   const usefulSignalCount = countUsefulCandidateSignals(signals);
@@ -100,9 +107,12 @@ export async function runResearchLoop(
   const completedAt = new Date().toISOString();
 
   await Promise.all([
+    dependencies.trace?.writeJson("loop/raw-signals.json", rawSignals),
     dependencies.trace?.writeJson("loop/signals.json", signals),
+    dependencies.trace?.writeJson("loop/research-quality.json", qualityReport),
     dependencies.trace?.writeJson("loop/candidates.json", candidates),
     dependencies.trace?.recordEvent("research_scoring_completed", {
+      rawSignalCount: rawSignals.length,
       signalCount: signals.length,
       candidateCount: candidates.length,
       gatePassingCandidateCount: gatePassingCandidates.length,

@@ -50,6 +50,7 @@ export interface QueryPlan {
   sourceId: SourceId;
   query: string;
   allowedDomains?: string[];
+  freshnessWindowDays?: number;
 }
 
 export interface PriceBand {
@@ -77,8 +78,11 @@ export interface ResearchSignal {
   query: string;
   sourceMode: SourceMode;
   sourceUrl?: string;
+  sourceTitle?: string;
+  sourcePublishedAt?: string;
   label?: string;
   summary: string;
+  freshnessNote?: string;
   tags: string[];
   metrics: MetricVector;
   confidence: number;
