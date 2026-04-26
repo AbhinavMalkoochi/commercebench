@@ -442,6 +442,77 @@ export interface CreateCjOrderDraftOutput {
   interceptOrderReasons: CjOrderDraftInterceptionReason[];
 }
 
+export interface CjOrderListItem {
+  orderId: string;
+  orderNumber?: string;
+  shipmentOrderId?: string;
+  orderStatus?: string;
+  shippingCountryCode?: string;
+  shippingProvince?: string;
+  shippingCity?: string;
+  shippingCustomerName?: string;
+  orderAmount?: number;
+  actualPayment?: number;
+  logisticName?: string;
+  trackNumber?: string;
+  createDate?: string;
+}
+
+export interface GetCjOrdersInput {
+  accessToken: string;
+  pageNum?: number;
+  pageSize?: number;
+  orderIds?: string[];
+  shipmentOrderId?: string;
+  status?: "CREATED" | "IN_CART" | "UNPAID" | "UNSHIPPED" | "SHIPPED" | "DELIVERED" | "CANCELLED" | "OTHER";
+  pageUrl?: string;
+}
+
+export interface GetCjOrdersOutput {
+  fetchedAt: string;
+  sourceUrl: string;
+  pageNum?: number;
+  pageSize?: number;
+  total?: number;
+  orders: CjOrderListItem[];
+}
+
+export interface CjOrderLineItem {
+  lineItemId?: string;
+  variantId?: string;
+  quantity?: number;
+  sku?: string;
+  productName?: string;
+}
+
+export interface GetCjOrderDetailInput {
+  accessToken: string;
+  orderId: string;
+  pageUrl?: string;
+}
+
+export interface GetCjOrderDetailOutput {
+  fetchedAt: string;
+  sourceUrl: string;
+  orderId: string;
+  orderNumber?: string;
+  shipmentOrderId?: string;
+  orderStatus?: string;
+  shippingCountryCode?: string;
+  shippingProvince?: string;
+  shippingCity?: string;
+  shippingCustomerName?: string;
+  shippingAddress?: string;
+  shippingZip?: string;
+  actualPayment?: number;
+  orderAmount?: number;
+  logisticName?: string;
+  trackNumber?: string;
+  createDate?: string;
+  paymentDate?: string;
+  products: CjOrderLineItem[];
+}
+
 export type AgentToolMap = {
   fetch_web_page: {
     input: FetchWebPageInput;
@@ -474,6 +545,14 @@ export type AgentToolMap = {
   get_cj_balance: {
     input: GetCjBalanceInput;
     output: GetCjBalanceOutput;
+  };
+  get_cj_orders: {
+    input: GetCjOrdersInput;
+    output: GetCjOrdersOutput;
+  };
+  get_cj_order_detail: {
+    input: GetCjOrderDetailInput;
+    output: GetCjOrderDetailOutput;
   };
   create_cj_order_draft: {
     input: CreateCjOrderDraftInput;

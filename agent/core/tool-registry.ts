@@ -12,6 +12,8 @@ import { createCjOrderDraftTool } from "@/agent/tools/create-cj-order-draft";
 import { createPrintfulStoreProductTool } from "@/agent/tools/create-printful-store-product";
 import { getCjAccessTokenTool } from "@/agent/tools/get-cj-access-token";
 import { getCjBalanceTool } from "@/agent/tools/get-cj-balance";
+import { getCjOrderDetailTool } from "@/agent/tools/get-cj-order-detail";
+import { getCjOrdersTool } from "@/agent/tools/get-cj-orders";
 import { getPrintfulMockupTaskTool } from "@/agent/tools/get-printful-mockup-task";
 import { getPrintfulProductsTool } from "@/agent/tools/get-printful-products";
 import { getPrintfulVariantPricesTool } from "@/agent/tools/get-printful-variant-prices";
@@ -32,6 +34,8 @@ const REGISTERED_TOOLS = [
   createPrintfulStoreProductTool,
   getCjAccessTokenTool,
   getCjBalanceTool,
+  getCjOrderDetailTool,
+  getCjOrdersTool,
   getPrintfulMockupTaskTool,
   getPrintfulProductsTool,
   getPrintfulVariantPricesTool,

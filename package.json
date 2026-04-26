@@ -14,6 +14,7 @@
     "agent:research:audit": "tsx agent/cli/audit-latest-research.ts",
     "agent:tools:test": "tsx agent/cli/tool-smoke-test.ts",
     "agent:runtime:test": "tsx agent/cli/runtime-smoke-test.ts",
+    "agent:ordersync:test": "tsx agent/cli/order-sync-smoke-test.ts",
     "agent:budget:test": "tsx agent/cli/budget-smoke-test.ts",
     "agent:pause:test": "tsx agent/cli/pause-smoke-test.ts",
     "agent:approval:test": "tsx agent/cli/approval-smoke-test.ts",

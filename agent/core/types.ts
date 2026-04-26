@@ -149,6 +149,7 @@ export interface AgentCycleRecord {
     execution?: ProductExecutionResult;
   };
   listingDraft?: ListingDraftResult;
+  orderSync?: OrderSyncResult;
 }
 
 export interface StoredAgentState {
@@ -349,6 +350,68 @@ export interface CjDraftExecutionResult {
 }
 
 export type ProductExecutionResult = PrintfulDraftExecutionResult | CjDraftExecutionResult;
+
+export interface ObservedTikTokOrder {
+  source: "webhook" | "search";
+  observedAt: string;
+  orderId: string;
+  status?: string;
+  rawType?: string;
+  shippingCountryCode?: string;
+  shippingCountry?: string;
+  shippingProvince?: string;
+  shippingCity?: string;
+  shippingCounty?: string;
+  shippingZip?: string;
+  shippingPhone?: string;
+  shippingCustomerName?: string;
+  shippingAddress?: string;
+  shippingAddress2?: string;
+  email?: string;
+  products: Array<{
+    sellerSku?: string;
+    skuId?: string;
+    productName?: string;
+    quantity: number;
+    salePrice?: string;
+  }>;
+}
+
+export interface SyncedCjOrderDraft {
+  sourceOrderId: string;
+  observedSource: "webhook" | "search";
+  orderStatus?: string;
+  cjOrderId?: string;
+  cjOrderNumber?: string;
+  cjShipmentOrderId?: string;
+  cjPayUrl?: string;
+  actualPayment?: number;
+  orderAmount?: number;
+  logisticsMissing?: boolean;
+  interceptOrderReasons: Array<{
+    code: number;
+    message: string;
+  }>;
+}
+
+export interface CjOrderReconciliationEntry {
+  sourceOrderId: string;
+  cjOrderId?: string;
+  cjOrderStatus?: string;
+  cjShipmentOrderId?: string;
+  cjTrackingNumber?: string;
+  cjLogisticName?: string;
+  shippingCountryCode?: string;
+  note: string;
+}
+
+export interface OrderSyncResult {
+  status: "ready" | "skipped" | "blocked";
+  reasoning: string;
+  observedOrders: ObservedTikTokOrder[];
+  createdDrafts: SyncedCjOrderDraft[];
+  reconciledOrders: CjOrderReconciliationEntry[];
+}
 
 export interface BudgetLedgerEntry {
   id: string;

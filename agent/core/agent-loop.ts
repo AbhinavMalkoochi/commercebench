@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { CjDraftExecutor } from "@/agent/core/cj-draft-executor";
 import { buildListingDraft } from "@/agent/core/listing-draft-builder";
+import { OrderSync, OrderSyncConfig } from "@/agent/core/order-sync";
 import { PrintfulDraftExecutor } from "@/agent/core/printful-draft-executor";
 import { planProductCreation } from "@/agent/core/product-creation-kernel";
 import {
@@ -37,6 +38,7 @@ interface AgentLoopProductCreationConfig {
     createStoreProduct?: boolean;
     fetchImpl?: typeof fetch;
   };
+  orderSync?: OrderSyncConfig;
 }
 
 interface AgentLoopControlPlaneConfig {
@@ -64,6 +66,7 @@ function createInitialState(): StoredAgentState {
 export class AgentLoop {
   private readonly cjDraftExecutor: CjDraftExecutor;
   private readonly printfulDraftExecutor: PrintfulDraftExecutor;
+  private readonly orderSync: OrderSync;
 
   constructor(
     private readonly store: AgentStateStore,
@@ -74,6 +77,7 @@ export class AgentLoop {
   ) {
     this.cjDraftExecutor = new CjDraftExecutor(research.trace);
     this.printfulDraftExecutor = new PrintfulDraftExecutor(research.trace);
+    this.orderSync = new OrderSync();
   }
 
   async runOnce(now = new Date()): Promise<AgentCycleRecord> {
@@ -107,6 +111,7 @@ export class AgentLoop {
       const result = await runResearchLoop(this.research, now);
       let productCreation: AgentCycleRecord["productCreation"] | undefined;
       let listingDraft: AgentCycleRecord["listingDraft"] | undefined;
+      let orderSync: AgentCycleRecord["orderSync"] | undefined;
       let completedAt = result.completedAt;
 
       if (result.status === "passed" && result.selectedCandidate && this.productCreation) {
@@ -174,6 +179,17 @@ export class AgentLoop {
         completedAt = new Date().toISOString();
       }
 
+      if (this.productCreation?.orderSync) {
+        orderSync = await this.orderSync.run({
+          config: this.productCreation.orderSync,
+          toolContext: {
+            now,
+            fetchImpl: this.productCreation.cjExecution?.fetchImpl,
+          },
+        });
+        completedAt = new Date().toISOString();
+      }
+
       const record: AgentCycleRecord = {
         cycleId: randomUUID(),
         startedAt,
@@ -181,6 +197,7 @@ export class AgentLoop {
         result,
         productCreation,
         listingDraft,
+        orderSync,
       };
       const lastResultPath = await this.store.appendCycle(record);
 

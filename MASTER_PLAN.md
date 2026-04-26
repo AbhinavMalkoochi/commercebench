@@ -162,6 +162,7 @@ This is the first step toward a general tool plane where the agent can select na
 - Added CJ balance visibility and unpaid supplier-order draft creation using `createOrderV2` with `payType=3`, so payment stays manual-only after a real order syncs from TikTok Shop.
 - Added a live Next.js control-room dashboard over `.agent-state/live`, an approval-gated remote shell tool for the hosted server, and a long-running agent daemon plus Docker Compose hosting baseline.
 - Added TikTok order visibility with an SDK-backed order search tool and a webhook ingest route that writes order-status payloads into the dashboard trail.
+- Added CJ monitoring primitives for order list and order detail, plus a first runtime pass that turns observed TikTok orders into unpaid CJ drafts and records reconciliation details per cycle.
 - Added a smoke test in `agent/cli/cj-draft-inspector-smoke-test.ts`.
 - Added a smoke test in `agent/cli/cj-draft-executor-smoke-test.ts`.
 - Added the command `npm run agent:cj:inspect:test`.
@@ -232,6 +233,7 @@ The first CJ sourcing read slice, the first CJ auth/token slice, the first CJ ex
 - Remote shell access is exposed through a high-risk, approval-gated `run_remote_shell_command()` tool that uses SSH by default and supports local mode for smoke testing.
 - `docker-compose.yml` now provides a minimal two-service hosting baseline: one service for the dashboard and one for the long-running agent, with a shared `.agent-state` volume.
 - TikTok order activity can now enter the system two ways: pull via `search_tiktok_orders()` and push via `/api/webhooks/tiktok/order-status`.
+- The hosted loop can now use `CJ_ORDER_SYNC_ACCESS_TOKEN` plus TikTok order credentials to observe orders, create unmatched unpaid CJ drafts, and capture CJ reconciliation state in cycle artifacts.
 
 ### Payment And Fulfillment Baseline
 

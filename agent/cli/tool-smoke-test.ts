@@ -133,6 +133,61 @@ const CJ_CREATE_ORDER_DRAFT_FIXTURE = {
   },
 };
 
+const CJ_ORDER_LIST_FIXTURE = {
+  data: {
+    pageNum: 1,
+    pageSize: 20,
+    total: 1,
+    list: [
+      {
+        orderId: "CJ-ORDER-001",
+        orderNumber: "TT-A1B2C3D4E5F6",
+        shipmentOrderId: "SHIP-001",
+        orderStatus: "UNPAID",
+        shippingCountryCode: "US",
+        shippingProvince: "California",
+        shippingCity: "Los Angeles",
+        shippingCustomerName: "Jane Doe",
+        orderAmount: "8.75",
+        actualPayment: "0.00",
+        logisticName: "CJPacket Ordinary",
+        trackNumber: "TRACK-123",
+        createDate: "2026-04-26 00:00:00",
+      },
+    ],
+  },
+};
+
+const CJ_ORDER_DETAIL_FIXTURE = {
+  data: {
+    orderId: "CJ-ORDER-001",
+    orderNumber: "TT-A1B2C3D4E5F6",
+    shipmentOrderId: "SHIP-001",
+    orderStatus: "UNPAID",
+    shippingCountryCode: "US",
+    shippingProvince: "California",
+    shippingCity: "Los Angeles",
+    shippingCustomerName: "Jane Doe",
+    shippingAddress: "123 Sunset Blvd",
+    shippingZip: "90001",
+    actualPayment: "0.00",
+    orderAmount: "8.75",
+    logisticName: "CJPacket Ordinary",
+    trackNumber: "TRACK-123",
+    createDate: "2026-04-26 00:00:00",
+    paymentDate: null,
+    productList: [
+      {
+        lineItemId: "cj-line-1",
+        variantId: "cj-variant-1",
+        quantity: 2,
+        sku: "CJ-HAIR-001",
+        productName: "Heatless Hair Curler Set",
+      },
+    ],
+  },
+};
+
 const TIKTOK_ACCESS_TOKEN_FIXTURE = {
   code: 0,
   message: "success",
@@ -308,6 +363,24 @@ async function main(): Promise<void> {
 
     if (url.includes("/shopping/order/createOrderV2")) {
       return new Response(JSON.stringify(CJ_CREATE_ORDER_DRAFT_FIXTURE), {
+        status: 200,
+        headers: {
+          "content-type": "application/json",
+        },
+      });
+    }
+
+    if (url.includes("/shopping/order/list")) {
+      return new Response(JSON.stringify(CJ_ORDER_LIST_FIXTURE), {
+        status: 200,
+        headers: {
+          "content-type": "application/json",
+        },
+      });
+    }
+
+    if (url.includes("/shopping/order/getOrderDetail")) {
+      return new Response(JSON.stringify(CJ_ORDER_DETAIL_FIXTURE), {
         status: 200,
         headers: {
           "content-type": "application/json",
@@ -635,6 +708,32 @@ async function main(): Promise<void> {
     },
   );
 
+  const cjOrders = await executor.execute(
+    "get_cj_orders",
+    {
+      accessToken: "cj-access-token",
+      status: "UNPAID",
+      pageNum: 1,
+      pageSize: 20,
+    },
+    {
+      now: new Date("2026-04-26T00:00:00.000Z"),
+      fetchImpl: productCreationFetch,
+    },
+  );
+
+  const cjOrderDetail = await executor.execute(
+    "get_cj_order_detail",
+    {
+      accessToken: "cj-access-token",
+      orderId: "CJ-ORDER-001",
+    },
+    {
+      now: new Date("2026-04-26T00:00:00.000Z"),
+      fetchImpl: productCreationFetch,
+    },
+  );
+
   const affiliateResult = await executor.execute(
     "get_tiktok_affiliate",
     {
@@ -668,11 +767,11 @@ async function main(): Promise<void> {
     }
   }
 
-  assert.equal(registry.listTools().length, 18);
+  assert.equal(registry.listTools().length, 20);
   assert.equal(registry.listToolsForStage("research").length, 1);
   assert.equal(registry.listToolsForStage("product_creation").length, 10);
   assert.equal(registry.listToolsForStage("listing").length, 4);
-  assert.equal(registry.listToolsForStage("monitoring").length, 2);
+  assert.equal(registry.listToolsForStage("monitoring").length, 4);
   assert.equal(fetchResult.title, "Research Fixture");
   assert.equal(fetchResult.text.includes("Current page text"), true);
   assert.equal(printfulProducts.products[0]?.name, "Unisex Staple T-Shirt");
@@ -684,6 +783,8 @@ async function main(): Promise<void> {
   assert.equal(cjBalance.balance, 125.5);
   assert.equal(cjOrderDraft.orderId, "CJ-ORDER-001");
   assert.equal(cjOrderDraft.actualPayment, 0);
+  assert.equal(cjOrders.orders[0]?.orderId, "CJ-ORDER-001");
+  assert.equal(cjOrderDetail.trackNumber, "TRACK-123");
   assert.equal(tiktokAccessToken.accessToken, "tts-access-token");
   assert.equal(tiktokRefreshedToken.accessToken, "tts-access-token-refreshed");
   assert.equal(tiktokAuthorizedShops.shops[0]?.cipher, "cipher-123");

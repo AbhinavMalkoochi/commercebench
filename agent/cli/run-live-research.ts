@@ -56,6 +56,25 @@ async function main(): Promise<void> {
             apiKey: cjApiKey,
           }
         : undefined,
+      orderSync: process.env.CJ_ORDER_SYNC_ACCESS_TOKEN
+        ? {
+            tikTok: process.env.TIKTOK_APP_KEY && process.env.TIKTOK_APP_SECRET && process.env.TIKTOK_ORDER_SYNC_ACCESS_TOKEN && process.env.TIKTOK_SHOP_CIPHER
+              ? {
+                  appKey: process.env.TIKTOK_APP_KEY,
+                  appSecret: process.env.TIKTOK_APP_SECRET,
+                  accessToken: process.env.TIKTOK_ORDER_SYNC_ACCESS_TOKEN,
+                  shopCipher: process.env.TIKTOK_SHOP_CIPHER,
+                }
+              : undefined,
+            cj: {
+              accessToken: process.env.CJ_ORDER_SYNC_ACCESS_TOKEN,
+              defaultLogisticName: process.env.CJ_DEFAULT_LOGISTIC_NAME ?? "CJPacket Ordinary",
+              fromCountryCode: process.env.CJ_FROM_COUNTRY_CODE ?? "CN",
+              platform: "TikTokShop",
+              storeName: process.env.CJ_STORE_NAME,
+            },
+          }
+        : undefined,
     },
   );
   const record = await loop.runOnce(new Date());
@@ -66,6 +85,7 @@ async function main(): Promise<void> {
     productCreationStatus: record.productCreation?.plan.status,
     productExecutionStatus: record.productCreation?.execution?.status,
     listingDraftStatus: record.listingDraft?.status,
+    orderSyncStatus: record.orderSync?.status,
     lastResultPath: `${process.cwd()}/.agent-state/live`,
   });
 

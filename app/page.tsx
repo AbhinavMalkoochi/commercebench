@@ -70,10 +70,20 @@ export default async function Home() {
                 <span className="summary-label">Listing draft</span>
                 <strong>{latestCycle.listingDraft?.status ?? "Unavailable"}</strong>
               </div>
+              <div className="summary-block">
+                <span className="summary-label">Order sync</span>
+                <strong>{latestCycle.orderSync?.status ?? "Unavailable"}</strong>
+              </div>
               <div className="summary-block full-width">
                 <span className="summary-label">Reasoning</span>
                 <p>{latestCycle.result.reasoning}</p>
               </div>
+              {latestCycle.orderSync ? (
+                <div className="summary-block full-width">
+                  <span className="summary-label">Order sync reasoning</span>
+                  <p>{latestCycle.orderSync.reasoning}</p>
+                </div>
+              ) : null}
             </div>
           ) : (
             <p className="empty-state">No live cycle has been recorded yet.</p>
@@ -91,9 +101,11 @@ export default async function Home() {
             <li><span>OpenAI</span><strong>{formatBool(data.environment.openAi)}</strong></li>
             <li><span>Exa</span><strong>{formatBool(data.environment.exa)}</strong></li>
             <li><span>CJ</span><strong>{formatBool(data.environment.cj)}</strong></li>
+            <li><span>CJ order sync</span><strong>{formatBool(data.environment.cjOrderSync)}</strong></li>
             <li><span>TikTok app key</span><strong>{formatBool(data.environment.tikTokAppKey)}</strong></li>
             <li><span>TikTok app secret</span><strong>{formatBool(data.environment.tikTokAppSecret)}</strong></li>
             <li><span>TikTok shop cipher</span><strong>{formatBool(data.environment.tikTokShopCipher)}</strong></li>
+            <li><span>TikTok order sync token</span><strong>{formatBool(data.environment.tikTokOrderSync)}</strong></li>
             <li><span>Remote shell mode</span><strong>{data.environment.remoteShellMode}</strong></li>
             <li><span>Remote shell host</span><strong>{data.environment.remoteShellHost ?? "Unset"}</strong></li>
           </ul>
@@ -147,7 +159,9 @@ export default async function Home() {
                     <span className="pill">{cycle.result.status}</span>
                     <span className="pill">{cycle.productCreation?.plan.draft?.fulfillmentProvider ?? "no-provider"}</span>
                     <span className="pill">listing {cycle.listingDraft?.status ?? "none"}</span>
+                    <span className="pill">orders {cycle.orderSync?.status ?? "none"}</span>
                   </div>
+                  {cycle.orderSync ? <p>{cycle.orderSync.reasoning}</p> : null}
                 </div>
               </article>
             )) : <p className="empty-state">No cycle files found under `.agent-state/live/cycles`.</p>}
@@ -209,6 +223,34 @@ export default async function Home() {
                 </article>
               );
             }) : <p className="empty-state">No TikTok webhook payloads stored yet.</p>}
+          </div>
+        </article>
+
+        <article className="panel panel-wide">
+          <div className="panel-header">
+            <div>
+              <p className="eyebrow">Order Reconciliation</p>
+              <h2>TikTok to CJ sync outcomes</h2>
+            </div>
+          </div>
+          <div className="timeline">
+            {data.cycles.flatMap((cycle) => cycle.orderSync?.reconciledOrders ?? []).length > 0 ? data.cycles.flatMap((cycle) => cycle.orderSync?.reconciledOrders ?? []).map((entry) => (
+              <article className="timeline-item" key={`${entry.sourceOrderId}-${entry.cjOrderId ?? "missing"}`}>
+                <div className="timeline-marker" />
+                <div className="timeline-content">
+                  <div className="timeline-topline">
+                    <strong>{entry.sourceOrderId}</strong>
+                    <span>{entry.cjOrderStatus ?? "unknown"}</span>
+                  </div>
+                  <p>{entry.note}</p>
+                  <div className="pill-row">
+                    <span className="pill">CJ {entry.cjOrderId ?? "missing"}</span>
+                    <span className="pill">shipment {entry.cjShipmentOrderId ?? "n/a"}</span>
+                    <span className="pill">tracking {entry.cjTrackingNumber ?? "n/a"}</span>
+                  </div>
+                </div>
+              </article>
+            )) : <p className="empty-state">No reconciled CJ orders yet.</p>}
           </div>
         </article>
       </section>
