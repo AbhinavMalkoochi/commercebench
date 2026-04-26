@@ -241,3 +241,39 @@ export interface ProductCreationResult {
   reasoning: string;
   draft?: ProductCreationDraft;
 }
+
+export interface PrintfulDraftInspectionSelection {
+  productId: number;
+  productName: string;
+  variantId: number;
+  variantName: string;
+  unitPrice: number;
+  currency: string;
+  productSourceUrl: string;
+  pricingSourceUrl: string;
+}
+
+export interface PrintfulDraftInspectionResult {
+  status: "ready" | "skipped" | "blocked";
+  reasoning: string;
+  selection?: PrintfulDraftInspectionSelection;
+}
+
+export interface BudgetLedgerEntry {
+  action: string;
+  amountUsd: number;
+  status: "planned" | "executed" | "blocked";
+  recordedAt: string;
+}
+
+export interface BudgetCheckResult {
+  allowed: boolean;
+  remainingBudgetUsd: number;
+  remainingAfterActionUsd: number;
+  reserveUsd: number;
+}
+
+export interface BudgetLedger {
+  listEntries(): Promise<BudgetLedgerEntry[]>;
+  appendEntry(entry: BudgetLedgerEntry): Promise<void>;
+}

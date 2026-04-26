@@ -129,11 +129,35 @@ The first explicit reusable tool slice is now implemented.
 
 - Added a typed tool model in `agent/core/tools.ts`.
 - Added a static tool registry in `agent/core/tool-registry.ts`.
+- Added a hardcoded `fetch_web_page()` tool in `agent/tools/fetch-web-page.ts`.
 - Added a hardcoded `get_tiktok_affiliate()` tool in `agent/tools/get-tiktok-affiliate.ts`.
+- Added hardcoded `get_printful_products()` and `get_printful_variant_prices()` tools in `agent/tools/`.
 - Added a smoke test in `agent/cli/tool-smoke-test.ts`.
 - Added the command `npm run agent:tools:test`.
 
 This is the first step toward a general tool plane where the agent can select named functions instead of relying on brittle prompt-only behavior.
+
+### General Runtime Baseline
+
+- Added a tool policy layer in `agent/core/tool-policy.ts`.
+- Added a general stage-aware task runner in `agent/core/task-runner.ts`.
+- Added a tool executor that traces tool inputs and outputs in `agent/core/tool-executor.ts`.
+- Added a runtime smoke test in `agent/cli/runtime-smoke-test.ts`.
+- Added the command `npm run agent:runtime:test`.
+
+### Product Creation Execution Baseline
+
+- Added a Printful draft inspector in `agent/core/printful-draft-inspector.ts`.
+- The inspector now turns a Printful draft into concrete catalog and pricing selections using the registered Printful tools.
+- Added a smoke test in `agent/cli/printful-draft-inspector-smoke-test.ts`.
+- Added the command `npm run agent:product:inspect:test`.
+
+### Budget Control Baseline
+
+- Added a first file-backed budget ledger in `agent/infrastructure/file-budget-ledger.ts`.
+- Added a reserve-aware budget service in `agent/core/budget-service.ts`.
+- Added a smoke test in `agent/cli/budget-smoke-test.ts`.
+- Added the command `npm run agent:budget:test`.
 
 ## What We Are Building Next
 
@@ -148,6 +172,8 @@ Tasks:
 3. Add a tool execution trace so every tool call is stored like research artifacts.
 4. Introduce a generic objective or action runner that can call tools outside the research loop.
 
+These baseline tasks are now implemented at the first working level.
+
 ### Phase 2. Build Printful-First Product Execution
 
 This is the next business-critical slice.
@@ -158,6 +184,8 @@ Tasks:
 2. Add mockup task creation and polling.
 3. Add a product execution result type that records chosen product shell, variants, pricing, and generated assets.
 4. Keep publish and payment steps explicitly gated.
+
+The first read-only inspection step is now implemented. Mockup creation, product shell creation, and gated write operations remain next.
 
 ### Phase 3. Upgrade Research From Fixed Planning To Model-Led Planning
 
@@ -188,10 +216,10 @@ Tasks:
 ## Immediate Next Tasks
 
 1. Add more hardcoded reusable tools beyond `get_tiktok_affiliate()`, starting with typed fetch, page-read, and provider-read tools.
-2. Extend the tool registry so tools can be selected by stage and risk level.
-3. Add a general tool execution trace artifact writer.
-4. Start the Printful-first adapter with read-only catalog inspection and price estimation.
-5. Replace the current single-purpose loop boundary with a more general agent execution model.
+2. Add more provider tools, starting with additional Printful read tools and the first TikTok affiliate read and setup tools.
+3. Add write-path Printful execution in draft mode: mockup task creation, polling, and product shell planning.
+4. Connect the budget service to guarded runtime actions.
+5. Replace the current single-purpose loop boundary in the main worker with the newer general task-runner model.
 
 ## Verification Baseline
 
@@ -200,7 +228,10 @@ These commands should stay green while the architecture evolves:
 - `npm run typecheck`
 - `npm run agent:research:test`
 - `npm run agent:tools:test`
+- `npm run agent:runtime:test`
+- `npm run agent:budget:test`
 - `npm run agent:product:test`
+- `npm run agent:product:inspect:test`
 
 ## Working Rules
 
