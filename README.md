@@ -1,36 +1,44 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Commercebench
 
-## Getting Started
+This repo now contains the first working slice of the commerce agent: a basic
+agent loop plus a research loop that can be smoke-tested locally and extended
+later with real database, publishing, and analytics adapters.
 
-First, run the development server:
+## Current Scope
+
+- Next.js app remains in place for future dashboard work.
+- Standalone TypeScript worker code lives under `agent/`.
+- The worker currently focuses on research only.
+- State is persisted through a file-backed store for local testing.
+- The storage interface is intentionally abstract so a real DB adapter can be
+	added later without rewriting the loop.
+
+## Commands
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run lint
+npm run typecheck
+npm run agent:research:test
+npm run agent:research:live
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Live Research Requirements
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+`npm run agent:research:live` expects `OPENAI_API_KEY` in the environment.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The live runner uses:
 
-## Learn More
+- direct-fetch adapters for Shopify, CJ Dropshipping, and Pinterest
+- search-backed extraction for TikTok trend surfaces
+- OpenAI Responses for structured search extraction and candidate selection
 
-To learn more about Next.js, take a look at the following resources:
+## Design Notes
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- The worker is backend-agnostic. It can run on a cheap VM, container, or cron
+	process without depending on Next.js request lifecycle.
+- The research loop enforces a minimum of eight planned queries.
+- Candidate selection uses deterministic gates first, then weighted scoring,
+	then an optional OpenAI reasoner for tie-breaking and narrative output.
+- Auth-only surfaces like TikTok Seller Product Opportunities are intentionally
+	left out of this first loop.
