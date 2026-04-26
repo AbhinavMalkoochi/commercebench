@@ -11,6 +11,7 @@
     "agent:research:test": "tsx agent/cli/smoke-test.ts",
     "agent:research:live": "tsx agent/cli/run-live-research.ts",
     "agent:research:audit": "tsx agent/cli/audit-latest-research.ts",
+    "agent:tools:test": "tsx agent/cli/tool-smoke-test.ts",
     "agent:product:test": "tsx agent/cli/product-creation-smoke-test.ts",
     "agent:product:plan-live": "tsx agent/cli/plan-product-from-live-cycle.ts"
   },

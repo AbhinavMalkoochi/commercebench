@@ -4,6 +4,9 @@ This repo now contains the first working slice of the commerce agent: a basic
 agent loop plus a research loop that can be smoke-tested locally and extended
 later with real database, publishing, and analytics adapters.
 
+The current architecture baseline, progress log, and next-task roadmap live in
+`MASTER_PLAN.md`.
+
 ## Current Scope
 
 - Next.js app remains in place for future dashboard work.
