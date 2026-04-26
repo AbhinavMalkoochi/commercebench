@@ -131,6 +131,28 @@ export interface SearchTikTokProductsOutput {
   products: TikTokShopProductSummary[];
 }
 
+export interface RunRemoteShellCommandInput {
+  command: string;
+  workingDirectory?: string;
+  timeoutSeconds?: number;
+  host?: string;
+  user?: string;
+  port?: number;
+  identityFile?: string;
+  mode?: "ssh" | "local";
+}
+
+export interface RunRemoteShellCommandOutput {
+  executedAt: string;
+  mode: "ssh" | "local";
+  host: string;
+  command: string;
+  exitCode: number;
+  stdout: string;
+  stderr: string;
+  durationMs: number;
+}
+
 export interface FetchWebPageInput {
   url: string;
   maxCharacters?: number;
@@ -451,6 +473,10 @@ export type AgentToolMap = {
   search_tiktok_products: {
     input: SearchTikTokProductsInput;
     output: SearchTikTokProductsOutput;
+  };
+  run_remote_shell_command: {
+    input: RunRemoteShellCommandInput;
+    output: RunRemoteShellCommandOutput;
   };
 };
 

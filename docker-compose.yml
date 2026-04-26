@@ -1,0 +1,21 @@
+services:
+  dashboard:
+    build: .
+    command: npm run start
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    volumes:
+      - agent_state:/app/.agent-state
+
+  agent:
+    build: .
+    command: npm run agent:daemon
+    env_file:
+      - .env
+    volumes:
+      - agent_state:/app/.agent-state
+
+volumes:
+  agent_state:

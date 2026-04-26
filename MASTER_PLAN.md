@@ -160,6 +160,7 @@ This is the first step toward a general tool plane where the agent can select na
 - Added TikTok Shop SDK-backed auth, authorized-shop, and product-search tools.
 - Extended local listing-draft generation so CJ-backed execution now produces a TikTok Shop-ready draft artifact instead of stopping at `skipped`.
 - Added CJ balance visibility and unpaid supplier-order draft creation using `createOrderV2` with `payType=3`, so payment stays manual-only after a real order syncs from TikTok Shop.
+- Added a live Next.js control-room dashboard over `.agent-state/live`, an approval-gated remote shell tool for the hosted server, and a long-running agent daemon plus Docker Compose hosting baseline.
 - Added a smoke test in `agent/cli/cj-draft-inspector-smoke-test.ts`.
 - Added a smoke test in `agent/cli/cj-draft-executor-smoke-test.ts`.
 - Added the command `npm run agent:cj:inspect:test`.
@@ -222,6 +223,13 @@ Tasks:
 4. Keep payment steps explicitly gated and manual-only.
 
 The first CJ sourcing read slice, the first CJ auth/token slice, the first CJ executor slice, the first TikTok listing-auth slice, the first CJ-to-TikTok listing-prep slice, and the first unpaid CJ order-draft slice are now implemented. Full CJ execution and TikTok product creation still remain next.
+
+### Hosting And Operations Baseline
+
+- The Next.js app is now the operations dashboard for live state, recent cycles, trace activity, environment readiness, and hosted shell status.
+- The hosted runtime now has a dedicated `npm run agent:daemon` entrypoint for recurring autonomous cycles.
+- Remote shell access is exposed through a high-risk, approval-gated `run_remote_shell_command()` tool that uses SSH by default and supports local mode for smoke testing.
+- `docker-compose.yml` now provides a minimal two-service hosting baseline: one service for the dashboard and one for the long-running agent, with a shared `.agent-state` volume.
 
 ### Payment And Fulfillment Baseline
 

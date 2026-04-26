@@ -1,65 +1,186 @@
-import Image from "next/image";
+import { getDashboardData } from "@/app/dashboard-data";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+function formatTimestamp(value: string | null | undefined): string {
+  if (!value) {
+    return "Not yet recorded";
+  }
+
+  return new Date(value).toLocaleString();
+}
+
+function formatBool(value: boolean): string {
+  return value ? "Ready" : "Missing";
+}
+
+export default async function Home() {
+  const data = await getDashboardData();
+  const latestCycle = data.cycles[0];
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <main className="dashboard-shell">
+      <section className="hero-panel">
+        <div className="hero-copy">
+          <p className="eyebrow">Commercebench Control Room</p>
+          <h1>Research, sourcing, listing, and hosted operations in one live surface.</h1>
+          <p className="hero-text">
+            This dashboard reads the same file-backed runtime state the agent uses, so you can see the live loop,
+            recent cycles, trace activity, TikTok readiness, and hosted shell configuration without a separate admin app.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <div className="hero-metrics">
+          <article className="metric-card accent-amber">
+            <span className="metric-label">Runtime State</span>
+            <strong>{data.state.currentState}</strong>
+            <span className="metric-meta">Last heartbeat: {formatTimestamp(data.state.lastHeartbeat)}</span>
+          </article>
+          <article className="metric-card accent-cyan">
+            <span className="metric-label">Cycle Count</span>
+            <strong>{data.state.cycleCount}</strong>
+            <span className="metric-meta">Latest result path: {data.state.lastResultPath ?? "No cycle file yet"}</span>
+          </article>
+          <article className="metric-card accent-red">
+            <span className="metric-label">Runtime Errors</span>
+            <strong>{data.state.lastError ? "Attention" : "Clear"}</strong>
+            <span className="metric-meta">{data.state.lastError ?? "No current runtime error."}</span>
+          </article>
         </div>
-      </main>
-    </div>
+      </section>
+
+      <section className="dashboard-grid">
+        <article className="panel panel-wide">
+          <div className="panel-header">
+            <div>
+              <p className="eyebrow">Latest Cycle</p>
+              <h2>Research to execution summary</h2>
+            </div>
+          </div>
+          {latestCycle ? (
+            <div className="cycle-summary">
+              <div className="summary-block">
+                <span className="summary-label">Selected candidate</span>
+                <strong>{latestCycle.result.selectedCandidate?.label ?? "No candidate selected"}</strong>
+              </div>
+              <div className="summary-block">
+                <span className="summary-label">Product provider</span>
+                <strong>{latestCycle.productCreation?.plan.draft?.fulfillmentProvider ?? "Not planned"}</strong>
+              </div>
+              <div className="summary-block">
+                <span className="summary-label">Listing draft</span>
+                <strong>{latestCycle.listingDraft?.status ?? "Unavailable"}</strong>
+              </div>
+              <div className="summary-block full-width">
+                <span className="summary-label">Reasoning</span>
+                <p>{latestCycle.result.reasoning}</p>
+              </div>
+            </div>
+          ) : (
+            <p className="empty-state">No live cycle has been recorded yet.</p>
+          )}
+        </article>
+
+        <article className="panel">
+          <div className="panel-header">
+            <div>
+              <p className="eyebrow">Environment</p>
+              <h2>API and shell readiness</h2>
+            </div>
+          </div>
+          <ul className="status-list">
+            <li><span>OpenAI</span><strong>{formatBool(data.environment.openAi)}</strong></li>
+            <li><span>Exa</span><strong>{formatBool(data.environment.exa)}</strong></li>
+            <li><span>CJ</span><strong>{formatBool(data.environment.cj)}</strong></li>
+            <li><span>TikTok app key</span><strong>{formatBool(data.environment.tikTokAppKey)}</strong></li>
+            <li><span>TikTok app secret</span><strong>{formatBool(data.environment.tikTokAppSecret)}</strong></li>
+            <li><span>TikTok shop cipher</span><strong>{formatBool(data.environment.tikTokShopCipher)}</strong></li>
+            <li><span>Remote shell mode</span><strong>{data.environment.remoteShellMode}</strong></li>
+            <li><span>Remote shell host</span><strong>{data.environment.remoteShellHost ?? "Unset"}</strong></li>
+          </ul>
+        </article>
+
+        <article className="panel">
+          <div className="panel-header">
+            <div>
+              <p className="eyebrow">Hosting</p>
+              <h2>Where the system runs</h2>
+            </div>
+          </div>
+          <div className="stack-list">
+            <div>
+              <span className="summary-label">Dashboard</span>
+              <code>{data.hosting.dashboardCommand}</code>
+            </div>
+            <div>
+              <span className="summary-label">Agent daemon</span>
+              <code>{data.hosting.daemonCommand}</code>
+            </div>
+            <div>
+              <span className="summary-label">Container stack</span>
+              <code>{data.hosting.containerStack}</code>
+            </div>
+            <div>
+              <span className="summary-label">Shared state volume</span>
+              <code>{data.hosting.sharedStatePath}</code>
+            </div>
+          </div>
+        </article>
+
+        <article className="panel panel-wide">
+          <div className="panel-header">
+            <div>
+              <p className="eyebrow">Recent Cycles</p>
+              <h2>Decision trail</h2>
+            </div>
+          </div>
+          <div className="timeline">
+            {data.cycles.length > 0 ? data.cycles.map((cycle) => (
+              <article className="timeline-item" key={cycle.cycleId}>
+                <div className="timeline-marker" />
+                <div className="timeline-content">
+                  <div className="timeline-topline">
+                    <strong>{cycle.result.selectedCandidate?.label ?? cycle.result.status}</strong>
+                    <span>{formatTimestamp(cycle.completedAt)}</span>
+                  </div>
+                  <p>{cycle.result.reasoning}</p>
+                  <div className="pill-row">
+                    <span className="pill">{cycle.result.status}</span>
+                    <span className="pill">{cycle.productCreation?.plan.draft?.fulfillmentProvider ?? "no-provider"}</span>
+                    <span className="pill">listing {cycle.listingDraft?.status ?? "none"}</span>
+                  </div>
+                </div>
+              </article>
+            )) : <p className="empty-state">No cycle files found under `.agent-state/live/cycles`.</p>}
+          </div>
+        </article>
+
+        <article className="panel panel-wide">
+          <div className="panel-header">
+            <div>
+              <p className="eyebrow">Trace Feed</p>
+              <h2>Recent trace directories and events</h2>
+            </div>
+          </div>
+          <div className="trace-grid">
+            {data.traces.length > 0 ? data.traces.map((trace) => (
+              <article className="trace-card" key={trace.id}>
+                <div className="trace-topline">
+                  <strong>{trace.metadata.command ? String(trace.metadata.command) : trace.id}</strong>
+                  <span>{trace.id}</span>
+                </div>
+                <ul className="trace-events">
+                  {trace.recentEvents.length > 0 ? trace.recentEvents.map((event, index) => (
+                    <li key={`${trace.id}-${index}`}>
+                      <span>{event.type}</span>
+                      <strong>{formatTimestamp(event.timestamp)}</strong>
+                    </li>
+                  )) : <li><span>No event stream found</span></li>}
+                </ul>
+              </article>
+            )) : <p className="empty-state">No trace directories found yet.</p>}
+          </div>
+        </article>
+      </section>
+    </main>
   );
 }

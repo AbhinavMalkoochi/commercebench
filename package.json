@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "agent:research:test": "tsx agent/cli/smoke-test.ts",
     "agent:research:live": "tsx agent/cli/run-live-research.ts",
+    "agent:daemon": "tsx agent/cli/agent-daemon.ts",
     "agent:research:audit": "tsx agent/cli/audit-latest-research.ts",
     "agent:tools:test": "tsx agent/cli/tool-smoke-test.ts",
     "agent:runtime:test": "tsx agent/cli/runtime-smoke-test.ts",

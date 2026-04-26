@@ -6,6 +6,7 @@ import { mkdtemp, readFile } from "node:fs/promises";
 import { ToolExecutor } from "@/agent/core/tool-executor";
 import { createDefaultToolRegistry } from "@/agent/core/tool-registry";
 import { FileResearchTrace } from "@/agent/infrastructure/file-research-trace";
+import { executeRemoteShellCommand } from "@/agent/tools/run-remote-shell-command";
 
 const FETCH_FIXTURE_HTML = `
   <html>
@@ -597,10 +598,31 @@ async function main(): Promise<void> {
     },
   );
 
-  assert.equal(registry.listTools().length, 16);
+  const previousRemoteShellMode = process.env.AGENT_REMOTE_SHELL_MODE;
+  try {
+    process.env.AGENT_REMOTE_SHELL_MODE = "local";
+    const remoteShellResult = await executeRemoteShellCommand(
+      {
+        command: "printf agent-shell-ok",
+      },
+      new Date("2026-04-26T00:00:00.000Z"),
+    );
+
+    assert.equal(remoteShellResult.stdout, "agent-shell-ok");
+    assert.equal(remoteShellResult.mode, "local");
+  } finally {
+    if (previousRemoteShellMode === undefined) {
+      delete process.env.AGENT_REMOTE_SHELL_MODE;
+    } else {
+      process.env.AGENT_REMOTE_SHELL_MODE = previousRemoteShellMode;
+    }
+  }
+
+  assert.equal(registry.listTools().length, 17);
   assert.equal(registry.listToolsForStage("research").length, 1);
   assert.equal(registry.listToolsForStage("product_creation").length, 10);
   assert.equal(registry.listToolsForStage("listing").length, 4);
+  assert.equal(registry.listToolsForStage("monitoring").length, 1);
   assert.equal(fetchResult.title, "Research Fixture");
   assert.equal(fetchResult.text.includes("Current page text"), true);
   assert.equal(printfulProducts.products[0]?.name, "Unisex Staple T-Shirt");
