@@ -159,6 +159,7 @@ This is the first step toward a general tool plane where the agent can select na
 - Added a CJ draft executor in `agent/core/cj-draft-executor.ts`.
 - Added TikTok Shop SDK-backed auth, authorized-shop, and product-search tools.
 - Extended local listing-draft generation so CJ-backed execution now produces a TikTok Shop-ready draft artifact instead of stopping at `skipped`.
+- Added CJ balance visibility and unpaid supplier-order draft creation using `createOrderV2` with `payType=3`, so payment stays manual-only after a real order syncs from TikTok Shop.
 - Added a smoke test in `agent/cli/cj-draft-inspector-smoke-test.ts`.
 - Added a smoke test in `agent/cli/cj-draft-executor-smoke-test.ts`.
 - Added the command `npm run agent:cj:inspect:test`.
@@ -220,7 +221,15 @@ Tasks:
 3. Add a product execution result type that records selected CJ products, variants where applicable, pricing, and downstream listing inputs.
 4. Keep payment steps explicitly gated and manual-only.
 
-The first CJ sourcing read slice, the first CJ auth/token slice, the first CJ executor slice, the first TikTok listing-auth slice, and the first CJ-to-TikTok listing-prep slice are now implemented. Full CJ execution and TikTok product creation still remain next.
+The first CJ sourcing read slice, the first CJ auth/token slice, the first CJ executor slice, the first TikTok listing-auth slice, the first CJ-to-TikTok listing-prep slice, and the first unpaid CJ order-draft slice are now implemented. Full CJ execution and TikTok product creation still remain next.
+
+### Payment And Fulfillment Baseline
+
+- Research confirms the practical CJ plus TikTok Shop flow is: list on TikTok Shop, receive a TikTok order, sync that order into CJ, create the supplier order, and only then pay CJ for fulfillment.
+- CJ `createOrderV2` supports `payType=3`, which creates the supplier order without payment, add-to-cart, or confirmation.
+- CJ `payType=2` is balance payment and `payType=1` returns a CJ payment URL.
+- For the TikTok platform-logistics path documented by CJ, labels are only purchased after payment completes.
+- Runtime policy should continue treating supplier payment as manual-only even when order draft creation is automated.
 
 ### Phase 3. Upgrade Research From Fixed Planning To Model-Led Planning
 

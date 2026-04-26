@@ -306,6 +306,87 @@ export interface CjAccessTokenOutput {
   createdAt?: string;
 }
 
+export interface GetCjBalanceInput {
+  accessToken: string;
+  pageUrl?: string;
+}
+
+export interface GetCjBalanceOutput {
+  fetchedAt: string;
+  sourceUrl: string;
+  balance: number;
+  currency: "USD";
+}
+
+export interface CreateCjOrderDraftItemInput {
+  vid?: string;
+  sku?: string;
+  quantity: number;
+  unitPrice?: number;
+  storeLineItemId?: string;
+}
+
+export interface CreateCjOrderDraftInput {
+  accessToken: string;
+  platformToken?: string;
+  orderNumber: string;
+  shippingCountryCode: string;
+  shippingCountry: string;
+  shippingProvince: string;
+  shippingCity: string;
+  shippingCustomerName: string;
+  shippingAddress: string;
+  logisticName: string;
+  fromCountryCode: string;
+  products: CreateCjOrderDraftItemInput[];
+  shippingZip?: string;
+  shippingCounty?: string;
+  shippingPhone?: string;
+  shippingAddress2?: string;
+  houseNumber?: string;
+  email?: string;
+  taxId?: string;
+  remark?: string;
+  consigneeId?: string;
+  shopAmount?: number;
+  iossType?: 1 | 2 | 3;
+  iossNumber?: string;
+  platform?: string;
+  shopLogisticsType?: 1 | 2 | 3;
+  storageId?: string;
+  storeName?: string;
+  storeOrderTimeSeconds?: number;
+  pageUrl?: string;
+}
+
+export interface CjOrderDraftInterceptionReason {
+  code: number;
+  message: string;
+}
+
+export interface CjOrderDraftProductInfo {
+  storeLineItemId?: string;
+  lineItemId?: string;
+  variantId?: string;
+  quantity?: number;
+  isGroup?: boolean;
+}
+
+export interface CreateCjOrderDraftOutput {
+  fetchedAt: string;
+  sourceUrl: string;
+  orderId?: string;
+  orderNumber?: string;
+  shipmentOrderId?: string;
+  orderStatus?: string;
+  actualPayment?: number;
+  orderAmount?: number;
+  cjPayUrl?: string;
+  logisticsMissing?: boolean;
+  productInfoList: CjOrderDraftProductInfo[];
+  interceptOrderReasons: CjOrderDraftInterceptionReason[];
+}
+
 export type AgentToolMap = {
   fetch_web_page: {
     input: FetchWebPageInput;
@@ -334,6 +415,14 @@ export type AgentToolMap = {
   get_cj_access_token: {
     input: GetCjAccessTokenInput;
     output: CjAccessTokenOutput;
+  };
+  get_cj_balance: {
+    input: GetCjBalanceInput;
+    output: GetCjBalanceOutput;
+  };
+  create_cj_order_draft: {
+    input: CreateCjOrderDraftInput;
+    output: CreateCjOrderDraftOutput;
   };
   refresh_cj_access_token: {
     input: RefreshCjAccessTokenInput;
