@@ -84,9 +84,18 @@ function buildReasons(score: Omit<CandidateScore, "gatePassed" | "gateReasons" |
     ["manageable competition", score.saturationResistance],
   ];
 
+  const positiveReasons = rankedReasons.filter(([, value]) => value >= 0.35);
+
+  if (positiveReasons.length > 0) {
+    return positiveReasons
+      .sort((left, right) => right[1] - left[1])
+      .slice(0, 3)
+      .map(([reason]) => reason);
+  }
+
   return rankedReasons
     .sort((left, right) => right[1] - left[1])
-    .slice(0, 3)
+    .slice(0, 1)
     .map(([reason]) => reason);
 }
 
