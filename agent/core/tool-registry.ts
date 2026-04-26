@@ -7,9 +7,16 @@ import {
   AnyAgentToolDefinition,
 } from "@/agent/core/tools";
 import { fetchWebPageTool } from "@/agent/tools/fetch-web-page";
+import { getPrintfulProductsTool } from "@/agent/tools/get-printful-products";
+import { getPrintfulVariantPricesTool } from "@/agent/tools/get-printful-variant-prices";
 import { getTikTokAffiliateTool } from "@/agent/tools/get-tiktok-affiliate";
 
-const REGISTERED_TOOLS = [fetchWebPageTool, getTikTokAffiliateTool] as const satisfies readonly AnyAgentToolDefinition[];
+const REGISTERED_TOOLS = [
+  fetchWebPageTool,
+  getPrintfulProductsTool,
+  getPrintfulVariantPricesTool,
+  getTikTokAffiliateTool,
+] as const satisfies readonly AnyAgentToolDefinition[];
 
 export class StaticToolRegistry implements AgentToolRegistry {
   private readonly toolMap = new Map(REGISTERED_TOOLS.map((tool) => [tool.name, tool]));

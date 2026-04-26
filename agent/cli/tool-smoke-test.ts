@@ -16,6 +16,32 @@ const FETCH_FIXTURE_HTML = `
   </html>
 `;
 
+const PRINTFUL_PRODUCTS_FIXTURE = {
+  result: [
+    {
+      id: 71,
+      name: "Unisex Staple T-Shirt",
+      description: "A classic tee.",
+      category_id: 24,
+      variants: [
+        {
+          id: 4011,
+          name: "Black / M",
+          price: 12.95,
+        },
+      ],
+    },
+  ],
+};
+
+const PRINTFUL_PRICES_FIXTURE = {
+  data: {
+    variant_id: 4011,
+    price: 12.95,
+    currency: "USD",
+  },
+};
+
 const FIXTURE_HTML = `
   <main>
     <article>
@@ -59,8 +85,57 @@ async function main(): Promise<void> {
         }),
     },
   );
-      const affiliateResult = await executor.execute(
-        "get_tiktok_affiliate",
+
+  const productCreationFetch: typeof fetch = async (input) => {
+    const url = typeof input === "string" ? input : input.toString();
+
+    if (url.includes("/products")) {
+      return new Response(JSON.stringify(PRINTFUL_PRODUCTS_FIXTURE), {
+        status: 200,
+        headers: {
+          "content-type": "application/json",
+        },
+      });
+    }
+
+    if (url.includes("/prices")) {
+      return new Response(JSON.stringify(PRINTFUL_PRICES_FIXTURE), {
+        status: 200,
+        headers: {
+          "content-type": "application/json",
+        },
+      });
+    }
+
+    throw new Error(`Unexpected product creation fetch URL: ${url}`);
+  };
+
+  const printfulProducts = await executor.execute(
+    "get_printful_products",
+    {
+      categoryId: 24,
+    },
+    {
+      now: new Date("2026-04-26T00:00:00.000Z"),
+      fetchImpl: productCreationFetch,
+    },
+  );
+
+  const printfulPrice = await executor.execute(
+    "get_printful_variant_prices",
+    {
+      variantId: 4011,
+      storeId: "store-123",
+      currency: "USD",
+    },
+    {
+      now: new Date("2026-04-26T00:00:00.000Z"),
+      fetchImpl: productCreationFetch,
+    },
+  );
+
+  const affiliateResult = await executor.execute(
+    "get_tiktok_affiliate",
     {
       query: "beauty creators with affiliate momentum",
       html: FIXTURE_HTML,
@@ -72,10 +147,14 @@ async function main(): Promise<void> {
     },
   );
 
-  assert.equal(registry.listTools().length, 2);
+  assert.equal(registry.listTools().length, 4);
   assert.equal(registry.listToolsForStage("research").length, 1);
+  assert.equal(registry.listToolsForStage("product_creation").length, 2);
   assert.equal(fetchResult.title, "Research Fixture");
   assert.equal(fetchResult.text.includes("Current page text"), true);
+  assert.equal(printfulProducts.products[0]?.name, "Unisex Staple T-Shirt");
+  assert.equal(printfulProducts.products[0]?.variants[0]?.id, 4011);
+  assert.equal(printfulPrice.price, 12.95);
   assert.equal(affiliateResult.affiliates.length, 2);
   assert.equal(affiliateResult.affiliates[0]?.handle, "@kitchenfinds");
   assert.equal(affiliateResult.affiliates[1]?.category, "beauty");

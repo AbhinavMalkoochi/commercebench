@@ -71,10 +71,59 @@ export interface FetchWebPageOutput {
   text: string;
 }
 
+export interface PrintfulCatalogVariantSummary {
+  id: number;
+  name: string;
+  price?: number;
+}
+
+export interface PrintfulCatalogProduct {
+  id: number;
+  name: string;
+  description?: string;
+  categoryId?: number;
+  variants: PrintfulCatalogVariantSummary[];
+}
+
+export interface GetPrintfulProductsInput {
+  categoryId?: number;
+  pageUrl?: string;
+}
+
+export interface GetPrintfulProductsOutput {
+  fetchedAt: string;
+  sourceUrl: string;
+  products: PrintfulCatalogProduct[];
+}
+
+export interface GetPrintfulVariantPricesInput {
+  variantId: number;
+  storeId: string;
+  currency?: string;
+  sellingRegionName?: string;
+  pageUrl?: string;
+}
+
+export interface GetPrintfulVariantPricesOutput {
+  fetchedAt: string;
+  sourceUrl: string;
+  variantId: number;
+  currency: string;
+  price: number;
+}
+
 export type AgentToolMap = {
   fetch_web_page: {
     input: FetchWebPageInput;
     output: FetchWebPageOutput;
+  };
+  get_printful_products: {
+    input: GetPrintfulProductsInput;
+    output: GetPrintfulProductsOutput;
+  };
+  get_printful_variant_prices: {
+    input: GetPrintfulVariantPricesInput;
+    output: GetPrintfulVariantPricesOutput;
   };
   get_tiktok_affiliate: {
     input: GetTikTokAffiliateInput;
