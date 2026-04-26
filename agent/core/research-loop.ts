@@ -22,6 +22,17 @@ export interface ResearchLoopDependencies {
   searchProvider?: SearchProvider;
 }
 
+const SOURCE_OPERATION_TIMEOUT_MS = 90_000;
+
+async function withTimeout<T>(operation: Promise<T>, timeoutMs: number, label: string): Promise<T> {
+  return await Promise.race([
+    operation,
+    new Promise<T>((_, reject) => {
+      setTimeout(() => reject(new Error(`${label} timed out after ${timeoutMs}ms.`)), timeoutMs);
+    }),
+  ]);
+}
+
 function buildBlockedReason(queries: QueryPlan[], usefulSignalCount: number): string {
   if (queries.length < MINIMUM_QUERY_COUNT) {
     return "Research loop did not schedule enough queries to satisfy the hard gate.";
@@ -44,22 +55,36 @@ export async function runResearchLoop(
 ): Promise<ResearchCycleResult> {
   const startedAt = now.toISOString();
   const queries = buildResearchQueryPlan(now);
-  const signals = [];
+  const signalSets = await Promise.all(
+    queries.map(async (query) => {
+      if (DIRECT_SOURCE_IDS.has(query.sourceId)) {
+        try {
+          return await withTimeout(
+            loadDirectSignals(query, dependencies.htmlClient, now),
+            SOURCE_OPERATION_TIMEOUT_MS,
+            query.sourceId,
+          );
+        } catch {
+          return [];
+        }
+      }
 
-  for (const query of queries) {
-    if (DIRECT_SOURCE_IDS.has(query.sourceId)) {
-      const directSignals = await loadDirectSignals(query, dependencies.htmlClient, now);
-      signals.push(...directSignals);
-      continue;
-    }
+      if (!dependencies.searchProvider) {
+        return [];
+      }
 
-    if (!dependencies.searchProvider) {
-      continue;
-    }
-
-    const searchSignals = await dependencies.searchProvider.searchSignals(query, now);
-    signals.push(...searchSignals);
-  }
+      try {
+        return await withTimeout(
+          dependencies.searchProvider.searchSignals(query, now),
+          SOURCE_OPERATION_TIMEOUT_MS,
+          query.sourceId,
+        );
+      } catch {
+        return [];
+      }
+    }),
+  );
+  const signals = signalSets.flat();
 
   const candidates = buildCandidatePortfolio(signals);
   const usefulSignalCount = countUsefulCandidateSignals(signals);
