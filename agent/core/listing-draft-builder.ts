@@ -1,6 +1,7 @@
 import {
   ListingDraftArtifact,
   ListingDraftResult,
+  ProductExecutionResult,
   PrintfulDraftExecutionResult,
   ProductCreationDraft,
 } from "@/agent/core/types";
@@ -28,7 +29,7 @@ function buildDescription(draft: ProductCreationDraft, execution: PrintfulDraftE
 
 export function buildListingDraft(
   draft: ProductCreationDraft,
-  execution?: PrintfulDraftExecutionResult,
+  execution?: ProductExecutionResult,
 ): ListingDraftResult {
   if (draft.blueprint.provider !== "printful") {
     return {
@@ -37,7 +38,9 @@ export function buildListingDraft(
     };
   }
 
-  if (!execution?.storeProduct) {
+  const printfulExecution = execution as PrintfulDraftExecutionResult | undefined;
+
+  if (!printfulExecution?.storeProduct) {
     return {
       status: "blocked",
       reasoning: "Listing draft generation requires a Printful store-product draft artifact.",
@@ -47,10 +50,10 @@ export function buildListingDraft(
   const artifact: ListingDraftArtifact = {
     title: draft.headline,
     subtitle: `${draft.candidateLabel} inspired Printful draft listing`,
-    description: buildDescription(draft, execution),
+    description: buildDescription(draft, printfulExecution),
     bullets: [
-      `Prepared from Printful store-product draft ${execution.storeProduct.productId}.`,
-      `Built around ${execution.selection?.productName ?? "a matched Printful base product"}.`,
+      `Prepared from Printful store-product draft ${printfulExecution.storeProduct.productId}.`,
+      `Built around ${printfulExecution.selection?.productName ?? "a matched Printful base product"}.`,
       `Uses the validated target retail price of $${draft.pricing.targetRetailPrice.toFixed(2)}.`,
     ],
     tags: [
@@ -58,15 +61,15 @@ export function buildListingDraft(
       draft.fulfillmentProvider,
       ...draft.notes.map((note) => note.split(":")[0]?.toLowerCase().replace(/[^a-z0-9]+/g, "-") ?? "note"),
     ].slice(0, 6),
-    heroImageUrl: execution.mockup?.assets[0]?.mockupUrl ?? execution.storeProduct.thumbnailUrl,
-    productHandle: toHandle(`${draft.candidateKey}-${execution.storeProduct.productId}`),
+    heroImageUrl: printfulExecution.mockup?.assets[0]?.mockupUrl ?? printfulExecution.storeProduct.thumbnailUrl,
+    productHandle: toHandle(`${draft.candidateKey}-${printfulExecution.storeProduct.productId}`),
     retailPrice: draft.pricing.targetRetailPrice,
     compareAtPrice: draft.pricing.compareAtPrice,
   };
 
   return {
     status: "ready",
-    reasoning: `Prepared a local listing draft from Printful store-product draft ${execution.storeProduct.productId} without publishing it live.`,
+    reasoning: `Prepared a local listing draft from Printful store-product draft ${printfulExecution.storeProduct.productId} without publishing it live.`,
     artifact,
   };
 }

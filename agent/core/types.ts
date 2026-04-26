@@ -146,7 +146,7 @@ export interface AgentCycleRecord {
   result: ResearchCycleResult;
   productCreation?: {
     plan: ProductCreationResult;
-    execution?: PrintfulDraftExecutionResult;
+    execution?: ProductExecutionResult;
   };
   listingDraft?: ListingDraftResult;
 }
@@ -205,6 +205,7 @@ export interface ProductCreationRequest {
   candidate: CandidatePortfolioEntry;
   maxRetailPrice: number;
   targetMarginFloor: number;
+  preferredProvider?: FulfillmentProvider;
 }
 
 export interface PricingEnvelope {
@@ -334,6 +335,20 @@ export interface CjDraftInspectionResult {
   reasoning: string;
   selection?: CjDraftInspectionSelection;
 }
+
+export interface CjDraftExecutionResult {
+  status: "ready" | "skipped" | "blocked";
+  reasoning: string;
+  selection?: CjDraftInspectionSelection;
+  authentication?: {
+    sourceUrl: string;
+    openId?: number;
+    accessTokenExpiryDate: string;
+    refreshTokenExpiryDate: string;
+  };
+}
+
+export type ProductExecutionResult = PrintfulDraftExecutionResult | CjDraftExecutionResult;
 
 export interface BudgetLedgerEntry {
   id: string;

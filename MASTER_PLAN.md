@@ -156,8 +156,11 @@ This is the first step toward a general tool plane where the agent can select na
 - Added a first CJ sourcing read tool in `agent/tools/query-cj-products.ts`.
 - Added hardcoded `get_cj_access_token()` and `refresh_cj_access_token()` tools in `agent/tools/`.
 - Added a CJ draft inspector in `agent/core/cj-draft-inspector.ts`.
+- Added a CJ draft executor in `agent/core/cj-draft-executor.ts`.
 - Added a smoke test in `agent/cli/cj-draft-inspector-smoke-test.ts`.
+- Added a smoke test in `agent/cli/cj-draft-executor-smoke-test.ts`.
 - Added the command `npm run agent:cj:inspect:test`.
+- Added the command `npm run agent:cj:execute:test`.
 
 ### Budget Control Baseline
 
@@ -215,7 +218,7 @@ Tasks:
 3. Add a product execution result type that records selected CJ products, variants where applicable, pricing, and downstream listing inputs.
 4. Keep payment steps explicitly gated and manual-only.
 
-The first CJ sourcing read slice and the first CJ auth/token slice are now implemented. Full CJ execution still remains next.
+The first CJ sourcing read slice, the first CJ auth/token slice, and the first CJ executor slice are now implemented. Full CJ execution still remains next.
 
 ### Phase 3. Upgrade Research From Fixed Planning To Model-Led Planning
 

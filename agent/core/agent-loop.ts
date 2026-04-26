@@ -1,11 +1,13 @@
 import { randomUUID } from "node:crypto";
 
+import { CjDraftExecutor } from "@/agent/core/cj-draft-executor";
 import { buildListingDraft } from "@/agent/core/listing-draft-builder";
 import { PrintfulDraftExecutor } from "@/agent/core/printful-draft-executor";
 import { planProductCreation } from "@/agent/core/product-creation-kernel";
 import {
   AgentCycleRecord,
   AgentStateStore,
+  FulfillmentProvider,
   StoredAgentState,
 } from "@/agent/core/types";
 import { ResearchLoopDependencies, runResearchLoop } from "@/agent/core/research-loop";
@@ -13,6 +15,11 @@ import { ResearchLoopDependencies, runResearchLoop } from "@/agent/core/research
 interface AgentLoopProductCreationConfig {
   maxRetailPrice: number;
   targetMarginFloor: number;
+  preferredProvider?: FulfillmentProvider;
+  cjExecution?: {
+    apiKey: string;
+    fetchImpl?: typeof fetch;
+  };
   printfulExecution?: {
     storeId: string;
     mockupStyleIds: number[];
@@ -55,6 +62,7 @@ function createInitialState(): StoredAgentState {
 }
 
 export class AgentLoop {
+  private readonly cjDraftExecutor: CjDraftExecutor;
   private readonly printfulDraftExecutor: PrintfulDraftExecutor;
 
   constructor(
@@ -64,6 +72,7 @@ export class AgentLoop {
     private readonly controlPlane: AgentLoopControlPlaneConfig = DEFAULT_CONTROL_PLANE_CONFIG,
     private readonly listing: AgentLoopListingConfig = { enabled: true },
   ) {
+    this.cjDraftExecutor = new CjDraftExecutor(research.trace);
     this.printfulDraftExecutor = new PrintfulDraftExecutor(research.trace);
   }
 
@@ -113,8 +122,25 @@ export class AgentLoop {
           candidate: result.selectedCandidate,
           maxRetailPrice: this.productCreation.maxRetailPrice,
           targetMarginFloor: this.productCreation.targetMarginFloor,
+          preferredProvider: this.productCreation.preferredProvider,
         });
         productCreation = { plan };
+
+        if (
+          plan.status === "draft_ready" &&
+          plan.draft?.blueprint.provider === "cj_dropshipping" &&
+          this.productCreation.cjExecution
+        ) {
+          const execution = await this.cjDraftExecutor.executeDraft(plan.draft, {
+            apiKey: this.productCreation.cjExecution.apiKey,
+            toolContext: {
+              now,
+              fetchImpl: this.productCreation.cjExecution.fetchImpl,
+            },
+          });
+
+          productCreation.execution = execution;
+        }
 
         if (
           plan.status === "draft_ready" &&

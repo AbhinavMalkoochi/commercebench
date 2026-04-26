@@ -10,13 +10,6 @@ import { FileResearchTrace } from "@/agent/infrastructure/file-research-trace";
 import { FileStateStore } from "@/agent/infrastructure/file-state-store";
 import { OpenAiSearchProvider } from "@/agent/infrastructure/openai-search-provider";
 
-function parseNumericList(value: string | undefined): number[] {
-  return (value ?? "")
-    .split(",")
-    .map((entry) => Number(entry.trim()))
-    .filter((entry) => Number.isFinite(entry));
-}
-
 async function main(): Promise<void> {
   const apiKey = process.env.OPENAI_API_KEY;
 
@@ -34,6 +27,7 @@ async function main(): Promise<void> {
     model,
     exaEnabled: Boolean(exaApiKey),
     reasoner: process.env.OPENAI_DISABLE_REASONER === "1" ? "heuristic" : "openai",
+    cjExecutionEnabled: Boolean(process.env.CJ_API_KEY),
   });
 
   const searchProviders: SearchProvider[] = [new OpenAiSearchProvider(client, model, trace)];
@@ -42,12 +36,7 @@ async function main(): Promise<void> {
     searchProviders.push(new ExaSearchProvider(new Exa(exaApiKey), client, model, trace));
   }
 
-  const printfulStoreId = process.env.PRINTFUL_STORE_ID;
-  const printfulArtworkUrl = process.env.PRINTFUL_ARTWORK_URL;
-  const printfulMockupStyleIds = parseNumericList(process.env.PRINTFUL_MOCKUP_STYLE_IDS);
-  const autoApproveMockups = process.env.PRINTFUL_AUTO_APPROVE_MOCKUPS === "1";
-  const createProductDraft = process.env.PRINTFUL_CREATE_PRODUCT_DRAFT === "1";
-  const autoApproveProductDraft = process.env.PRINTFUL_AUTO_APPROVE_PRODUCT_DRAFT === "1";
+  const cjApiKey = process.env.CJ_API_KEY;
 
   const loop = new AgentLoop(
     new FileStateStore(`${process.cwd()}/.agent-state/live`),
@@ -61,20 +50,12 @@ async function main(): Promise<void> {
     {
       maxRetailPrice: 60,
       targetMarginFloor: 0.35,
-      printfulExecution:
-        printfulStoreId && printfulArtworkUrl && printfulMockupStyleIds.length > 0
-          ? {
-              storeId: printfulStoreId,
-              artworkUrl: printfulArtworkUrl,
-              mockupStyleIds: printfulMockupStyleIds,
-              approvedToolNames: [
-                ...(autoApproveMockups ? ["create_printful_mockup_task", "get_printful_mockup_task"] as const : []),
-                ...(autoApproveProductDraft ? ["create_printful_store_product"] as const : []),
-              ],
-              pollTask: true,
-              createStoreProduct: createProductDraft,
-            }
-          : undefined,
+      preferredProvider: "cj_dropshipping",
+      cjExecution: cjApiKey
+        ? {
+            apiKey: cjApiKey,
+          }
+        : undefined,
     },
   );
   const record = await loop.runOnce(new Date());

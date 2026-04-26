@@ -147,6 +147,14 @@ export function planProductCreation(request: ProductCreationRequest): ProductCre
     };
   }
 
+  if (request.preferredProvider === "cj_dropshipping") {
+    return {
+      status: "draft_ready",
+      reasoning: "The active runtime is configured for CJ-only execution, so the kernel produced a CJ-first draft with manual payment approval required.",
+      draft: buildDraft(request, buildCjBlueprint(request.candidate)),
+    };
+  }
+
   const printfulFamily = choosePrintfulFamily(request.candidate);
 
   if (printfulFamily) {
