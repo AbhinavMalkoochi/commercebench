@@ -212,6 +212,27 @@ export interface QueryCjProductsOutput {
   products: CjProductSummary[];
 }
 
+export interface GetCjAccessTokenInput {
+  apiKey: string;
+  pageUrl?: string;
+}
+
+export interface RefreshCjAccessTokenInput {
+  refreshToken: string;
+  pageUrl?: string;
+}
+
+export interface CjAccessTokenOutput {
+  fetchedAt: string;
+  sourceUrl: string;
+  openId?: number;
+  accessToken: string;
+  accessTokenExpiryDate: string;
+  refreshToken: string;
+  refreshTokenExpiryDate: string;
+  createdAt?: string;
+}
+
 export type AgentToolMap = {
   fetch_web_page: {
     input: FetchWebPageInput;
@@ -236,6 +257,14 @@ export type AgentToolMap = {
   create_printful_store_product: {
     input: CreatePrintfulStoreProductInput;
     output: CreatePrintfulStoreProductOutput;
+  };
+  get_cj_access_token: {
+    input: GetCjAccessTokenInput;
+    output: CjAccessTokenOutput;
+  };
+  refresh_cj_access_token: {
+    input: RefreshCjAccessTokenInput;
+    output: CjAccessTokenOutput;
   };
   query_cj_products: {
     input: QueryCjProductsInput;

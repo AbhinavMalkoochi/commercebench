@@ -9,21 +9,25 @@ import {
 import { fetchWebPageTool } from "@/agent/tools/fetch-web-page";
 import { createPrintfulMockupTaskTool } from "@/agent/tools/create-printful-mockup-task";
 import { createPrintfulStoreProductTool } from "@/agent/tools/create-printful-store-product";
+import { getCjAccessTokenTool } from "@/agent/tools/get-cj-access-token";
 import { getPrintfulMockupTaskTool } from "@/agent/tools/get-printful-mockup-task";
 import { getPrintfulProductsTool } from "@/agent/tools/get-printful-products";
 import { getPrintfulVariantPricesTool } from "@/agent/tools/get-printful-variant-prices";
 import { getTikTokAffiliateTool } from "@/agent/tools/get-tiktok-affiliate";
 import { queryCjProductsTool } from "@/agent/tools/query-cj-products";
+import { refreshCjAccessTokenTool } from "@/agent/tools/refresh-cj-access-token";
 
 const REGISTERED_TOOLS = [
   fetchWebPageTool,
   createPrintfulMockupTaskTool,
   createPrintfulStoreProductTool,
+  getCjAccessTokenTool,
   getPrintfulMockupTaskTool,
   getPrintfulProductsTool,
   getPrintfulVariantPricesTool,
   getTikTokAffiliateTool,
   queryCjProductsTool,
+  refreshCjAccessTokenTool,
 ] as const satisfies readonly AnyAgentToolDefinition[];
 
 export class StaticToolRegistry implements AgentToolRegistry {

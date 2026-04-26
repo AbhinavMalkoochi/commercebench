@@ -154,6 +154,7 @@ This is the first step toward a general tool plane where the agent can select na
 - Added a smoke test in `agent/cli/printful-draft-inspector-smoke-test.ts`.
 - Added the command `npm run agent:product:inspect:test`.
 - Added a first CJ sourcing read tool in `agent/tools/query-cj-products.ts`.
+- Added hardcoded `get_cj_access_token()` and `refresh_cj_access_token()` tools in `agent/tools/`.
 - Added a CJ draft inspector in `agent/core/cj-draft-inspector.ts`.
 - Added a smoke test in `agent/cli/cj-draft-inspector-smoke-test.ts`.
 - Added the command `npm run agent:cj:inspect:test`.
@@ -214,7 +215,7 @@ Tasks:
 3. Add a product execution result type that records selected CJ products, variants where applicable, pricing, and downstream listing inputs.
 4. Keep payment steps explicitly gated and manual-only.
 
-The first CJ sourcing read slice is now implemented. Full CJ execution still remains next.
+The first CJ sourcing read slice and the first CJ auth/token slice are now implemented. Full CJ execution still remains next.
 
 ### Phase 3. Upgrade Research From Fixed Planning To Model-Led Planning
 
@@ -246,7 +247,7 @@ Tasks:
 ## Immediate Next Tasks
 
 1. Remove Printful from the active execution path and switch the live runner to CJ-only provider handling.
-2. Add CJ authentication, token refresh, and the next CJ execution tools beyond product query.
+2. Add the next CJ execution tools beyond product query and token handling.
 3. Extend the CJ execution slice from sourcing reads into guarded draft creation while keeping payments manual-only.
 4. Add TikTok Shop auth, authorized-shop lookup, and provider-backed listing drafts.
 5. Add TikTok affiliate execution after listing creation is stable.

@@ -82,6 +82,27 @@ const PRINTFUL_STORE_PRODUCT_FIXTURE = {
   },
 };
 
+const CJ_GET_ACCESS_TOKEN_FIXTURE = {
+  data: {
+    openId: 123456789,
+    accessToken: "cj-access-token",
+    accessTokenExpiryDate: "2026-05-11T09:16:33+08:00",
+    refreshToken: "cj-refresh-token",
+    refreshTokenExpiryDate: "2026-10-23T09:16:33+08:00",
+    createDate: "2026-04-26T09:16:33+08:00",
+  },
+};
+
+const CJ_REFRESH_ACCESS_TOKEN_FIXTURE = {
+  data: {
+    accessToken: "cj-access-token-refreshed",
+    accessTokenExpiryDate: "2026-05-12T09:16:33+08:00",
+    refreshToken: "cj-refresh-token-refreshed",
+    refreshTokenExpiryDate: "2026-10-24T09:16:33+08:00",
+    createDate: "2026-04-27T09:16:33+08:00",
+  },
+};
+
 const CJ_PRODUCTS_FIXTURE = {
   products: [
     {
@@ -139,6 +160,24 @@ async function main(): Promise<void> {
 
   const productCreationFetch: typeof fetch = async (input) => {
     const url = typeof input === "string" ? input : input.toString();
+
+    if (url.includes("/authentication/getAccessToken")) {
+      return new Response(JSON.stringify(CJ_GET_ACCESS_TOKEN_FIXTURE), {
+        status: 200,
+        headers: {
+          "content-type": "application/json",
+        },
+      });
+    }
+
+    if (url.includes("/authentication/refreshAccessToken")) {
+      return new Response(JSON.stringify(CJ_REFRESH_ACCESS_TOKEN_FIXTURE), {
+        status: 200,
+        headers: {
+          "content-type": "application/json",
+        },
+      });
+    }
 
     if (url.includes("/v2/mockup-tasks") && url.includes("id=")) {
       return new Response(JSON.stringify(PRINTFUL_MOCKUP_GET_FIXTURE), {
@@ -261,6 +300,28 @@ async function main(): Promise<void> {
     },
   );
 
+  const cjAccessToken = await executor.execute(
+    "get_cj_access_token",
+    {
+      apiKey: "CJUSER@api@test-key",
+    },
+    {
+      now: new Date("2026-04-26T00:00:00.000Z"),
+      fetchImpl: productCreationFetch,
+    },
+  );
+
+  const cjRefreshedToken = await executor.execute(
+    "refresh_cj_access_token",
+    {
+      refreshToken: "cj-refresh-token",
+    },
+    {
+      now: new Date("2026-04-26T00:00:00.000Z"),
+      fetchImpl: productCreationFetch,
+    },
+  );
+
   const storeProduct = await executor.execute(
     "create_printful_store_product",
     {
@@ -304,15 +365,17 @@ async function main(): Promise<void> {
     },
   );
 
-  assert.equal(registry.listTools().length, 8);
+  assert.equal(registry.listTools().length, 10);
   assert.equal(registry.listToolsForStage("research").length, 1);
-  assert.equal(registry.listToolsForStage("product_creation").length, 6);
+  assert.equal(registry.listToolsForStage("product_creation").length, 8);
   assert.equal(fetchResult.title, "Research Fixture");
   assert.equal(fetchResult.text.includes("Current page text"), true);
   assert.equal(printfulProducts.products[0]?.name, "Unisex Staple T-Shirt");
   assert.equal(printfulProducts.products[0]?.variants[0]?.id, 4011);
   assert.equal(printfulPrice.price, 12.95);
   assert.equal(mockupTask.taskId, 597350033);
+  assert.equal(cjAccessToken.accessToken, "cj-access-token");
+  assert.equal(cjRefreshedToken.accessToken, "cj-access-token-refreshed");
   assert.equal(mockupTaskResult.assets[0]?.mockupUrl, "https://example.com/mockup.png");
   assert.equal(storeProduct.productId, 7001);
   assert.equal(cjProducts.products[0]?.productId, "cj-123");
