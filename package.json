@@ -9,7 +9,8 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "agent:research:test": "tsx agent/cli/smoke-test.ts",
-    "agent:research:live": "tsx agent/cli/run-live-research.ts"
+    "agent:research:live": "tsx agent/cli/run-live-research.ts",
+    "agent:product:test": "tsx agent/cli/product-creation-smoke-test.ts"
   },
   "dependencies": {
     "cheerio": "^1.2.0",

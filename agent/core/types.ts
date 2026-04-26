@@ -177,3 +177,65 @@ export interface AgentStateStore {
   writeState(state: StoredAgentState): Promise<void>;
   appendCycle(record: AgentCycleRecord): Promise<string>;
 }
+
+export type FulfillmentProvider = "printful" | "cj_dropshipping";
+export type ProductCreationStatus = "draft_ready" | "blocked_manual_review";
+export type PrintfulProductFamily =
+  | "tshirt"
+  | "hoodie"
+  | "poster"
+  | "mug"
+  | "tote"
+  | "phone_case";
+
+export interface ProductCreationRequest {
+  candidate: CandidatePortfolioEntry;
+  maxRetailPrice: number;
+  targetMarginFloor: number;
+}
+
+export interface PricingEnvelope {
+  currency: "USD";
+  targetRetailPrice: number;
+  maxUnitCost: number;
+  compareAtPrice?: number;
+}
+
+export interface ApprovalRequirement {
+  step: "design_review" | "listing_publish" | "supplier_payment" | "sample_order";
+  reason: string;
+}
+
+export interface PrintfulProductBlueprint {
+  provider: "printful";
+  productFamily: PrintfulProductFamily;
+  designBrief: string;
+  requiresGeneratedArtwork: boolean;
+}
+
+export interface CjDropshippingProductBlueprint {
+  provider: "cj_dropshipping";
+  sourcingQuery: string;
+  searchKeywords: string[];
+  sampleOrderRecommended: boolean;
+  requiresManualPaymentApproval: boolean;
+}
+
+export type ProductBlueprint = PrintfulProductBlueprint | CjDropshippingProductBlueprint;
+
+export interface ProductCreationDraft {
+  candidateKey: string;
+  candidateLabel: string;
+  fulfillmentProvider: FulfillmentProvider;
+  headline: string;
+  pricing: PricingEnvelope;
+  blueprint: ProductBlueprint;
+  approvalRequirements: ApprovalRequirement[];
+  notes: string[];
+}
+
+export interface ProductCreationResult {
+  status: ProductCreationStatus;
+  reasoning: string;
+  draft?: ProductCreationDraft;
+}
