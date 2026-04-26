@@ -2,7 +2,7 @@
 
 ## Mission
 
-Build an autonomous commerce agent that can research demand with broad tool access, choose a winning product, create that product through Printful or CJ, list it, set up TikTok affiliate distribution, monitor outcomes, diagnose failures, and pivot without being trapped inside rigid prompt chains.
+Build an autonomous commerce agent that can research demand with broad tool access, choose a winning product, source that product through CJ Dropshipping, list it on TikTok Shop, activate TikTok affiliate distribution, monitor outcomes, diagnose failures, and pivot without being trapped inside rigid prompt chains.
 
 The system should feel like a real agent with broad capabilities, but it should run inside a strong control plane. The model should be free to plan, investigate, and adapt. The runtime should own safety, budget enforcement, approvals for irreversible actions, action logging, and recovery.
 
@@ -46,7 +46,7 @@ The long-term tool surface should include:
 - filesystem read and write
 - sandboxed shell commands
 - typed HTTP requests
-- provider adapters for Printful, CJ, TikTok, and storefront systems
+- provider adapters for CJ, TikTok, and storefront systems
 - budget inspection
 - approval inspection
 - trace and artifact inspection
@@ -122,6 +122,7 @@ The repository already has a working research-first kernel.
 
 - The kernel can route a winning candidate toward a Printful-first or CJ-first draft.
 - Approval requirements are already modeled at the draft level.
+- The active roadmap now treats CJ as the only execution provider, with Printful left as dormant reference code until explicitly needed again.
 
 ### Tool Runtime Baseline
 
@@ -152,6 +153,10 @@ This is the first step toward a general tool plane where the agent can select na
 - The inspector now turns a Printful draft into concrete catalog and pricing selections using the registered Printful tools.
 - Added a smoke test in `agent/cli/printful-draft-inspector-smoke-test.ts`.
 - Added the command `npm run agent:product:inspect:test`.
+- Added a first CJ sourcing read tool in `agent/tools/query-cj-products.ts`.
+- Added a CJ draft inspector in `agent/core/cj-draft-inspector.ts`.
+- Added a smoke test in `agent/cli/cj-draft-inspector-smoke-test.ts`.
+- Added the command `npm run agent:cj:inspect:test`.
 
 ### Budget Control Baseline
 
@@ -173,7 +178,7 @@ This is the first step toward a general tool plane where the agent can select na
 - Registered the new Printful mockup tools in the static registry.
 - Added a Printful draft executor in `agent/core/printful-draft-executor.ts` that bridges inspected drafts into mockup-task execution artifacts.
 - Extended the Printful draft executor so it can optionally create a guarded store-product draft after mockup generation.
-- Added a local listing-draft builder in `agent/core/listing-draft-builder.ts` that turns Printful draft artifacts into a non-published listing draft.
+- Added a local listing-draft builder in `agent/core/listing-draft-builder.ts` that turns provider draft artifacts into a non-published listing draft.
 - Added a first CJ sourcing read tool in `agent/tools/query-cj-products.ts` and a CJ draft inspector in `agent/core/cj-draft-inspector.ts`.
 - Extended the runtime smoke test to verify approval-gated execution for Printful mockup creation.
 - Added a smoke test in `agent/cli/approval-smoke-test.ts`.
@@ -198,18 +203,18 @@ Tasks:
 
 These baseline tasks are now implemented at the first working level.
 
-### Phase 2. Build Printful-First Product Execution
+### Phase 2. Build CJ-First Product Execution
 
 This is the next business-critical slice.
 
 Tasks:
 
-1. Add a Printful adapter that can inspect catalog items and pricing.
-2. Add mockup task creation and polling.
-3. Add a product execution result type that records chosen product shell, variants, pricing, and generated assets.
-4. Keep publish and payment steps explicitly gated.
+1. Add CJ authentication, sourcing, and execution primitives.
+2. Add a CJ draft executor that can turn a sourced-product draft into provider-backed execution artifacts.
+3. Add a product execution result type that records selected CJ products, variants where applicable, pricing, and downstream listing inputs.
+4. Keep payment steps explicitly gated and manual-only.
 
-The read-only inspection step, approval-gated mockup execution, guarded store-product draft creation, local listing-draft generation, and the first CJ sourcing read slice are now implemented. Live publish actions still remain gated and out of scope.
+The first CJ sourcing read slice is now implemented. Full CJ execution still remains next.
 
 ### Phase 3. Upgrade Research From Fixed Planning To Model-Led Planning
 
@@ -229,23 +234,22 @@ Tasks:
 
 Budget checks, a first file-backed approval workflow, and a first repeated-failure pause mechanism are now implemented.
 
-### Phase 5. Add CJ, Listing, Affiliate Execution, Monitoring, And Pivoting
+### Phase 5. Add TikTok Listing, Affiliate Execution, Monitoring, And Pivoting
 
 Tasks:
 
-1. Add CJ sourcing tools and adapters.
-2. Add listing-draft and listing-publish stages.
-3. Add TikTok affiliate and content execution tools.
-4. Add monitoring and diagnosis loops.
-5. Add pivot strategies based on performance evidence.
+1. Add TikTok Shop auth, authorized-shop resolution, and listing-draft/listing-publish stages.
+2. Add TikTok affiliate execution tools and creator-facing product distribution flows.
+3. Add monitoring and diagnosis loops.
+4. Add pivot strategies based on performance evidence.
 
 ## Immediate Next Tasks
 
-1. Connect approval and budget controls to more provider write paths beyond mockup generation and draft product creation.
-2. Keep replacing the remaining single-purpose loop boundary in the main worker with the newer general task-runner model, starting from the now-wired research-to-product-creation handoff.
-3. Harden the new pause behavior into broader circuit breakers across more runtime subsystems, not only the main loop.
-4. Extend the CJ execution slice from sourcing reads into guarded draft creation.
-5. Extend the new listing-draft stage toward provider-backed listing drafts while keeping publish actions gated.
+1. Remove Printful from the active execution path and switch the live runner to CJ-only provider handling.
+2. Add CJ authentication, token refresh, and the next CJ execution tools beyond product query.
+3. Extend the CJ execution slice from sourcing reads into guarded draft creation while keeping payments manual-only.
+4. Add TikTok Shop auth, authorized-shop lookup, and provider-backed listing drafts.
+5. Add TikTok affiliate execution after listing creation is stable.
 
 ## Verification Baseline
 
@@ -270,4 +274,5 @@ These commands should stay green while the architecture evolves:
 - Prefer typed tool interfaces over prompt-only instructions.
 - Keep shell access sandboxed and policy-controlled.
 - Avoid reintroducing large heuristic systems for business logic.
+- Treat CJ as the only active execution provider until TikTok Shop listing and affiliate execution are stable.
 - Preserve the traceability of every major decision and action.
