@@ -259,6 +259,28 @@ export interface PrintfulDraftInspectionResult {
   selection?: PrintfulDraftInspectionSelection;
 }
 
+export interface PrintfulDraftExecutionMockup {
+  taskId: number;
+  status: string;
+  sourceUrl: string;
+  assets: Array<{
+    catalogVariantId: number;
+    placement: string;
+    displayName?: string;
+    technique?: string;
+    styleId?: number;
+    mockupUrl: string;
+  }>;
+  failureReasons: string[];
+}
+
+export interface PrintfulDraftExecutionResult {
+  status: "ready" | "skipped" | "blocked";
+  reasoning: string;
+  selection?: PrintfulDraftInspectionSelection;
+  mockup?: PrintfulDraftExecutionMockup;
+}
+
 export interface BudgetLedgerEntry {
   id: string;
   action: string;
