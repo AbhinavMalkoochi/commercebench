@@ -156,6 +156,7 @@ This is the first step toward a general tool plane where the agent can select na
 
 - Added a first file-backed budget ledger in `agent/infrastructure/file-budget-ledger.ts`.
 - Added a reserve-aware budget service in `agent/core/budget-service.ts`.
+- Connected the general task runner to optional budget checks for priced steps.
 - Added a smoke test in `agent/cli/budget-smoke-test.ts`.
 - Added the command `npm run agent:budget:test`.
 
@@ -218,7 +219,7 @@ Tasks:
 1. Add more hardcoded reusable tools beyond `get_tiktok_affiliate()`, starting with typed fetch, page-read, and provider-read tools.
 2. Add more provider tools, starting with additional Printful read tools and the first TikTok affiliate read and setup tools.
 3. Add write-path Printful execution in draft mode: mockup task creation, polling, and product shell planning.
-4. Connect the budget service to guarded runtime actions.
+4. Connect the budget service to more guarded runtime actions and provider write paths.
 5. Replace the current single-purpose loop boundary in the main worker with the newer general task-runner model.
 
 ## Verification Baseline

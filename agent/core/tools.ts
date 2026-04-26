@@ -138,6 +138,8 @@ export type AgentToolCall = {
     id: string;
     toolName: Name;
     input: AgentToolMap[Name]["input"];
+    estimatedCostUsd?: number;
+    budgetAction?: string;
   };
 }[AgentToolName];
 

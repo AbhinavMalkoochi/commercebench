@@ -11,9 +11,25 @@ export class BudgetService {
 
   async getCommittedSpendUsd(): Promise<number> {
     const entries = await this.ledger.listEntries();
-    return entries
-      .filter((entry) => entry.status === "planned" || entry.status === "executed")
-      .reduce((sum, entry) => sum + entry.amountUsd, 0);
+    const grouped = new Map<string, typeof entries>();
+
+    for (const entry of entries) {
+      const key = entry.referenceId ?? entry.id;
+      const existing = grouped.get(key) ?? [];
+      existing.push(entry);
+      grouped.set(key, existing);
+    }
+
+    return [...grouped.values()].reduce((sum, group) => {
+      const executed = [...group].reverse().find((entry) => entry.status === "executed");
+
+      if (executed) {
+        return sum + executed.amountUsd;
+      }
+
+      const planned = [...group].reverse().find((entry) => entry.status === "planned");
+      return planned ? sum + planned.amountUsd : sum;
+    }, 0);
   }
 
   async checkBudget(amountUsd: number): Promise<BudgetCheckResult> {
@@ -29,25 +45,29 @@ export class BudgetService {
     };
   }
 
-  async recordPlannedAction(action: string, amountUsd: number): Promise<BudgetCheckResult> {
+  async recordPlannedAction(action: string, amountUsd: number, referenceId: string): Promise<BudgetCheckResult> {
     const check = await this.checkBudget(amountUsd);
 
     await this.ledger.appendEntry({
+      id: `${referenceId}-planned`,
       action,
       amountUsd,
       status: check.allowed ? "planned" : "blocked",
       recordedAt: new Date().toISOString(),
+      referenceId,
     });
 
     return check;
   }
 
-  async recordExecutedAction(action: string, amountUsd: number): Promise<void> {
+  async recordExecutedAction(action: string, amountUsd: number, referenceId: string): Promise<void> {
     await this.ledger.appendEntry({
+      id: `${referenceId}-executed`,
       action,
       amountUsd,
       status: "executed",
       recordedAt: new Date().toISOString(),
+      referenceId,
     });
   }
 }

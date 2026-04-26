@@ -260,10 +260,12 @@ export interface PrintfulDraftInspectionResult {
 }
 
 export interface BudgetLedgerEntry {
+  id: string;
   action: string;
   amountUsd: number;
   status: "planned" | "executed" | "blocked";
   recordedAt: string;
+  referenceId?: string;
 }
 
 export interface BudgetCheckResult {

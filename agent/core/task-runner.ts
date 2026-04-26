@@ -6,6 +6,7 @@ import {
   AgentToolPolicyContext,
   AgentToolRegistry,
 } from "@/agent/core/tools";
+import { BudgetService } from "@/agent/core/budget-service";
 import { ToolExecutor } from "@/agent/core/tool-executor";
 import { FileResearchTrace } from "@/agent/infrastructure/file-research-trace";
 
@@ -16,6 +17,7 @@ export class AgentTaskRunner {
     registry: AgentToolRegistry,
     private readonly policy: AgentToolPolicy,
     private readonly trace?: FileResearchTrace,
+    private readonly budgetService?: BudgetService,
   ) {
     this.executor = new ToolExecutor(registry, trace);
   }
@@ -60,7 +62,43 @@ export class AgentTaskRunner {
         return blockedResult;
       }
 
+      if (typeof step.estimatedCostUsd === "number" && this.budgetService) {
+        const budgetAction = step.budgetAction ?? `${plan.objective}:${step.id}`;
+        const budgetCheck = await this.budgetService.recordPlannedAction(
+          budgetAction,
+          step.estimatedCostUsd,
+          step.id,
+        );
+
+        if (!budgetCheck.allowed) {
+          const blockedResult: AgentTaskRunResult = {
+            status: "blocked",
+            objective: plan.objective,
+            completedSteps,
+            blockedStepId: step.id,
+            blockedReason: `Budget blocked step ${step.id}; remaining after action would be ${budgetCheck.remainingAfterActionUsd} USD with a ${budgetCheck.reserveUsd} USD reserve.`,
+          };
+
+          await Promise.all([
+            this.trace?.writeJson("runtime/task-result.json", blockedResult),
+            this.trace?.recordEvent("task_plan_blocked", {
+              objective: plan.objective,
+              blockedStepId: step.id,
+              reason: blockedResult.blockedReason,
+            }),
+          ]);
+
+          return blockedResult;
+        }
+      }
+
       const output = await this.executor.execute(step.toolName, step.input as never, toolContext);
+
+      if (typeof step.estimatedCostUsd === "number" && this.budgetService) {
+        const budgetAction = step.budgetAction ?? `${plan.objective}:${step.id}`;
+        await this.budgetService.recordExecutedAction(budgetAction, step.estimatedCostUsd, step.id);
+      }
+
       completedSteps.push({
         stepId: step.id,
         toolName: step.toolName,
