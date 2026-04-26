@@ -4,9 +4,12 @@ import path from "node:path";
 import { mkdtemp, readFile } from "node:fs/promises";
 
 import { BudgetService } from "@/agent/core/budget-service";
+import { ApprovalService } from "@/agent/core/approval-service";
 import { DefaultToolPolicy } from "@/agent/core/tool-policy";
 import { createDefaultToolRegistry } from "@/agent/core/tool-registry";
 import { AgentTaskRunner } from "@/agent/core/task-runner";
+import { AgentToolName } from "@/agent/core/tools";
+import { FileApprovalStore } from "@/agent/infrastructure/file-approval-store";
 import { FileBudgetLedger } from "@/agent/infrastructure/file-budget-ledger";
 import { FileResearchTrace } from "@/agent/infrastructure/file-research-trace";
 
@@ -29,6 +32,9 @@ async function main(): Promise<void> {
       totalBudgetUsd: 20,
       reserveUsd: 5,
     },
+  );
+  const approvals = new ApprovalService<AgentToolName>(
+    new FileApprovalStore(path.join(traceRoot, "approvals.json")),
   );
 
   const runner = new AgentTaskRunner(
@@ -132,9 +138,93 @@ async function main(): Promise<void> {
   assert.equal(budgetBlocked.blockedStepId, "step-3");
   assert.equal(budgetBlocked.blockedReason?.includes("Budget blocked step step-3"), true);
 
+  const approvalBlocked = await runner.runPlan(
+    {
+      objective: "Attempt to create a mockup task without approval.",
+      steps: [
+        {
+          id: "step-4",
+          toolName: "create_printful_mockup_task",
+          input: {
+            storeId: "store-123",
+            catalogProductId: 71,
+            catalogVariantIds: [4011],
+            mockupStyleIds: [100],
+            placements: [
+              {
+                placement: "front",
+                technique: "dtg",
+                printAreaType: "simple",
+                imageUrl: "https://example.com/design.png",
+                position: { width: 10, height: 10, top: 0, left: 0 },
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      now: new Date("2026-04-26T00:00:00.000Z"),
+      fetchImpl: async () =>
+        new Response(JSON.stringify({ data: [{ id: 1, status: "pending" }] }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        }),
+    },
+    {
+      stage: "product_creation",
+    },
+  );
+
+  const approvalRequest = await approvals.requestApproval("create_printful_mockup_task");
+  await approvals.decideRequest(approvalRequest.id, "approved");
+  const approvalAllowed = await runner.runPlan(
+    {
+      objective: "Create a mockup task with approval.",
+      steps: [
+        {
+          id: "step-5",
+          toolName: "create_printful_mockup_task",
+          input: {
+            storeId: "store-123",
+            catalogProductId: 71,
+            catalogVariantIds: [4011],
+            mockupStyleIds: [100],
+            placements: [
+              {
+                placement: "front",
+                technique: "dtg",
+                printAreaType: "simple",
+                imageUrl: "https://example.com/design.png",
+                position: { width: 10, height: 10, top: 0, left: 0 },
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      now: new Date("2026-04-26T00:00:00.000Z"),
+      fetchImpl: async () =>
+        new Response(JSON.stringify({ data: [{ id: 777, status: "pending" }] }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        }),
+    },
+    {
+      stage: "product_creation",
+      approvedToolNames: await approvals.listApprovedActions(),
+    },
+  );
+
+  assert.equal(approvalBlocked.status, "blocked");
+  assert.equal(approvalBlocked.blockedStepId, "step-4");
+  assert.equal(approvalBlocked.blockedReason?.includes("requires explicit approval"), true);
+  assert.equal(approvalAllowed.status, "completed");
+
   const savedResultPath = path.join(trace.traceDirectory, "runtime", "task-result.json");
   const savedResult = JSON.parse(await readFile(savedResultPath, "utf8")) as { status: string };
-  assert.equal(savedResult.status, "blocked");
+  assert.equal(savedResult.status, "completed");
 
   console.log("Runtime smoke test passed.");
   console.log(`Trace directory: ${trace.traceDirectory}`);

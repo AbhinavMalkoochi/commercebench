@@ -279,3 +279,17 @@ export interface BudgetLedger {
   listEntries(): Promise<BudgetLedgerEntry[]>;
   appendEntry(entry: BudgetLedgerEntry): Promise<void>;
 }
+
+export interface ApprovalRequest {
+  id: string;
+  action: string;
+  status: "pending" | "approved" | "rejected";
+  requestedAt: string;
+  decidedAt?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface ApprovalStore {
+  listRequests(): Promise<ApprovalRequest[]>;
+  upsertRequest(request: ApprovalRequest): Promise<void>;
+}

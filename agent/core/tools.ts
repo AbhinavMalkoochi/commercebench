@@ -112,6 +112,62 @@ export interface GetPrintfulVariantPricesOutput {
   price: number;
 }
 
+export interface CreatePrintfulMockupTaskPlacement {
+  placement: string;
+  technique: string;
+  printAreaType: string;
+  imageUrl: string;
+  position: {
+    width: number;
+    height: number;
+    top: number;
+    left: number;
+  };
+}
+
+export interface CreatePrintfulMockupTaskInput {
+  storeId: string;
+  catalogProductId: number;
+  catalogVariantIds: number[];
+  mockupStyleIds: number[];
+  placements: CreatePrintfulMockupTaskPlacement[];
+  format?: "jpg" | "png";
+  mockupWidthPx?: number;
+  orientation?: "vertical" | "horizontal";
+  pageUrl?: string;
+}
+
+export interface CreatePrintfulMockupTaskOutput {
+  fetchedAt: string;
+  sourceUrl: string;
+  taskId: number;
+  status: string;
+}
+
+export interface GetPrintfulMockupTaskInput {
+  taskId: number;
+  storeId: string;
+  pageUrl?: string;
+}
+
+export interface PrintfulMockupAsset {
+  catalogVariantId: number;
+  placement: string;
+  displayName?: string;
+  technique?: string;
+  styleId?: number;
+  mockupUrl: string;
+}
+
+export interface GetPrintfulMockupTaskOutput {
+  fetchedAt: string;
+  sourceUrl: string;
+  taskId: number;
+  status: string;
+  assets: PrintfulMockupAsset[];
+  failureReasons: string[];
+}
+
 export type AgentToolMap = {
   fetch_web_page: {
     input: FetchWebPageInput;
@@ -124,6 +180,14 @@ export type AgentToolMap = {
   get_printful_variant_prices: {
     input: GetPrintfulVariantPricesInput;
     output: GetPrintfulVariantPricesOutput;
+  };
+  create_printful_mockup_task: {
+    input: CreatePrintfulMockupTaskInput;
+    output: CreatePrintfulMockupTaskOutput;
+  };
+  get_printful_mockup_task: {
+    input: GetPrintfulMockupTaskInput;
+    output: GetPrintfulMockupTaskOutput;
   };
   get_tiktok_affiliate: {
     input: GetTikTokAffiliateInput;

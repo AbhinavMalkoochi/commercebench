@@ -160,6 +160,16 @@ This is the first step toward a general tool plane where the agent can select na
 - Added a smoke test in `agent/cli/budget-smoke-test.ts`.
 - Added the command `npm run agent:budget:test`.
 
+### Approval And Draft-Mode Execution Baseline
+
+- Added a file-backed approval store in `agent/infrastructure/file-approval-store.ts`.
+- Added an approval service in `agent/core/approval-service.ts`.
+- Added hardcoded `create_printful_mockup_task()` and `get_printful_mockup_task()` tools in `agent/tools/`.
+- Registered the new Printful mockup tools in the static registry.
+- Extended the runtime smoke test to verify approval-gated execution for Printful mockup creation.
+- Added a smoke test in `agent/cli/approval-smoke-test.ts`.
+- Added the command `npm run agent:approval:test`.
+
 ## What We Are Building Next
 
 ### Phase 1. Establish The General Tool Runtime
@@ -186,7 +196,7 @@ Tasks:
 3. Add a product execution result type that records chosen product shell, variants, pricing, and generated assets.
 4. Keep publish and payment steps explicitly gated.
 
-The first read-only inspection step is now implemented. Mockup creation, product shell creation, and gated write operations remain next.
+The read-only inspection step and the first approval-gated mockup task execution slice are now implemented. Product shell creation and richer draft execution artifacts remain next.
 
 ### Phase 3. Upgrade Research From Fixed Planning To Model-Led Planning
 
@@ -204,6 +214,8 @@ Tasks:
 2. Add approval workflows for irreversible actions.
 3. Add repeated-failure detection and automatic pause behavior.
 
+Budget checks and a first file-backed approval workflow are now implemented. Failure-rate circuit breakers still remain.
+
 ### Phase 5. Add CJ, Listing, Affiliate Execution, Monitoring, And Pivoting
 
 Tasks:
@@ -216,11 +228,11 @@ Tasks:
 
 ## Immediate Next Tasks
 
-1. Add more hardcoded reusable tools beyond `get_tiktok_affiliate()`, starting with typed fetch, page-read, and provider-read tools.
-2. Add more provider tools, starting with additional Printful read tools and the first TikTok affiliate read and setup tools.
-3. Add write-path Printful execution in draft mode: mockup task creation, polling, and product shell planning.
-4. Connect the budget service to more guarded runtime actions and provider write paths.
-5. Replace the current single-purpose loop boundary in the main worker with the newer general task-runner model.
+1. Add a product execution result type that persists catalog selections, chosen variants, price guardrails, and generated mockup assets.
+2. Extend Printful draft-mode execution from mockup tasks into product shell planning while keeping publish actions gated.
+3. Connect approval and budget controls to more provider write paths beyond mockup generation.
+4. Replace the current single-purpose loop boundary in the main worker with the newer general task-runner model.
+5. Add failure-rate circuit breakers and automatic pause behavior to the control plane.
 
 ## Verification Baseline
 
@@ -228,6 +240,7 @@ These commands should stay green while the architecture evolves:
 
 - `npm run typecheck`
 - `npm run agent:research:test`
+- `npm run agent:approval:test`
 - `npm run agent:tools:test`
 - `npm run agent:runtime:test`
 - `npm run agent:budget:test`

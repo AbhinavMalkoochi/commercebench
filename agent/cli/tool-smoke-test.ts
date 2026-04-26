@@ -42,6 +42,35 @@ const PRINTFUL_PRICES_FIXTURE = {
   },
 };
 
+const PRINTFUL_MOCKUP_CREATE_FIXTURE = {
+  data: [
+    {
+      id: 597350033,
+      status: "pending",
+    },
+  ],
+};
+
+const PRINTFUL_MOCKUP_GET_FIXTURE = {
+  id: 597350033,
+  status: "completed",
+  catalog_variant_mockups: [
+    {
+      catalog_variant_id: 4011,
+      mockups: [
+        {
+          placement: "front",
+          display_name: "Front Print",
+          technique: "dtg",
+          style_id: 1,
+          mockup_url: "https://example.com/mockup.png",
+        },
+      ],
+    },
+  ],
+  failure_reasons: [],
+};
+
 const FIXTURE_HTML = `
   <main>
     <article>
@@ -89,6 +118,24 @@ async function main(): Promise<void> {
   const productCreationFetch: typeof fetch = async (input) => {
     const url = typeof input === "string" ? input : input.toString();
 
+    if (url.includes("/v2/mockup-tasks") && url.includes("id=")) {
+      return new Response(JSON.stringify(PRINTFUL_MOCKUP_GET_FIXTURE), {
+        status: 200,
+        headers: {
+          "content-type": "application/json",
+        },
+      });
+    }
+
+    if (url.includes("/v2/mockup-tasks")) {
+      return new Response(JSON.stringify(PRINTFUL_MOCKUP_CREATE_FIXTURE), {
+        status: 200,
+        headers: {
+          "content-type": "application/json",
+        },
+      });
+    }
+
     if (url.includes("/products")) {
       return new Response(JSON.stringify(PRINTFUL_PRODUCTS_FIXTURE), {
         status: 200,
@@ -134,6 +181,46 @@ async function main(): Promise<void> {
     },
   );
 
+  const mockupTask = await executor.execute(
+    "create_printful_mockup_task",
+    {
+      storeId: "store-123",
+      catalogProductId: 71,
+      catalogVariantIds: [4011],
+      mockupStyleIds: [100],
+      placements: [
+        {
+          placement: "front",
+          technique: "dtg",
+          printAreaType: "simple",
+          imageUrl: "https://example.com/design.png",
+          position: {
+            width: 10,
+            height: 10,
+            top: 0,
+            left: 0,
+          },
+        },
+      ],
+    },
+    {
+      now: new Date("2026-04-26T00:00:00.000Z"),
+      fetchImpl: productCreationFetch,
+    },
+  );
+
+  const mockupTaskResult = await executor.execute(
+    "get_printful_mockup_task",
+    {
+      taskId: 597350033,
+      storeId: "store-123",
+    },
+    {
+      now: new Date("2026-04-26T00:00:00.000Z"),
+      fetchImpl: productCreationFetch,
+    },
+  );
+
   const affiliateResult = await executor.execute(
     "get_tiktok_affiliate",
     {
@@ -147,14 +234,16 @@ async function main(): Promise<void> {
     },
   );
 
-  assert.equal(registry.listTools().length, 4);
+  assert.equal(registry.listTools().length, 6);
   assert.equal(registry.listToolsForStage("research").length, 1);
-  assert.equal(registry.listToolsForStage("product_creation").length, 2);
+  assert.equal(registry.listToolsForStage("product_creation").length, 4);
   assert.equal(fetchResult.title, "Research Fixture");
   assert.equal(fetchResult.text.includes("Current page text"), true);
   assert.equal(printfulProducts.products[0]?.name, "Unisex Staple T-Shirt");
   assert.equal(printfulProducts.products[0]?.variants[0]?.id, 4011);
   assert.equal(printfulPrice.price, 12.95);
+  assert.equal(mockupTask.taskId, 597350033);
+  assert.equal(mockupTaskResult.assets[0]?.mockupUrl, "https://example.com/mockup.png");
   assert.equal(affiliateResult.affiliates.length, 2);
   assert.equal(affiliateResult.affiliates[0]?.handle, "@kitchenfinds");
   assert.equal(affiliateResult.affiliates[1]?.category, "beauty");
