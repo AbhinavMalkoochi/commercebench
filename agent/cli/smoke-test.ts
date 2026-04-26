@@ -20,6 +20,10 @@ async function main(): Promise<void> {
       searchProvider: new FixtureSearchProvider(),
       reasoner: new HeuristicReasoner(),
     },
+    {
+      maxRetailPrice: 60,
+      targetMarginFloor: 0.35,
+    },
   );
 
   const record = await loop.runOnce(new Date("2026-04-26T12:00:00.000Z"));
@@ -28,6 +32,8 @@ async function main(): Promise<void> {
   assert.equal(record.result.status, "passed");
   assert.ok(selected, "Expected a selected candidate.");
   assert.equal(selected.label, "Hydrocolloid Pimple Patches");
+  assert.equal(record.productCreation?.plan.status, "draft_ready");
+  assert.equal(record.productCreation?.plan.draft?.fulfillmentProvider, "cj_dropshipping");
   assert.ok(record.result.candidates.length >= 3, "Expected at least three ranked candidates.");
   assert.ok(
     record.result.queries.length >= 8,

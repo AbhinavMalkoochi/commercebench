@@ -142,6 +142,7 @@ This is the first step toward a general tool plane where the agent can select na
 - Added a tool policy layer in `agent/core/tool-policy.ts`.
 - Added a general stage-aware task runner in `agent/core/task-runner.ts`.
 - Added a tool executor that traces tool inputs and outputs in `agent/core/tool-executor.ts`.
+- Extended `agent/core/agent-loop.ts` so the main worker can persist post-research product-creation planning instead of stopping at research-only records.
 - Added a runtime smoke test in `agent/cli/runtime-smoke-test.ts`.
 - Added the command `npm run agent:runtime:test`.
 
@@ -157,8 +158,11 @@ This is the first step toward a general tool plane where the agent can select na
 - Added a first file-backed budget ledger in `agent/infrastructure/file-budget-ledger.ts`.
 - Added a reserve-aware budget service in `agent/core/budget-service.ts`.
 - Connected the general task runner to optional budget checks for priced steps.
+- Added repeated-runtime-failure pause behavior in `agent/core/agent-loop.ts` so the loop can automatically cool down after consecutive hard failures.
 - Added a smoke test in `agent/cli/budget-smoke-test.ts`.
+- Added a smoke test in `agent/cli/pause-smoke-test.ts`.
 - Added the command `npm run agent:budget:test`.
+- Added the command `npm run agent:pause:test`.
 
 ### Approval And Draft-Mode Execution Baseline
 
@@ -217,7 +221,7 @@ Tasks:
 2. Add approval workflows for irreversible actions.
 3. Add repeated-failure detection and automatic pause behavior.
 
-Budget checks and a first file-backed approval workflow are now implemented. Failure-rate circuit breakers still remain.
+Budget checks, a first file-backed approval workflow, and a first repeated-failure pause mechanism are now implemented.
 
 ### Phase 5. Add CJ, Listing, Affiliate Execution, Monitoring, And Pivoting
 
@@ -233,8 +237,8 @@ Tasks:
 
 1. Extend Printful draft-mode execution from mockup tasks into product shell planning while keeping publish actions gated.
 2. Connect approval and budget controls to more provider write paths beyond mockup generation.
-3. Replace the current single-purpose loop boundary in the main worker with the newer general task-runner model.
-4. Add failure-rate circuit breakers and automatic pause behavior to the control plane.
+3. Keep replacing the remaining single-purpose loop boundary in the main worker with the newer general task-runner model, starting from the now-wired research-to-product-creation handoff.
+4. Harden the new pause behavior into broader circuit breakers across more runtime subsystems, not only the main loop.
 5. Add the next provider execution slice after Printful, starting with CJ sourcing reads and guarded draft creation.
 
 ## Verification Baseline
@@ -247,6 +251,7 @@ These commands should stay green while the architecture evolves:
 - `npm run agent:tools:test`
 - `npm run agent:runtime:test`
 - `npm run agent:budget:test`
+- `npm run agent:pause:test`
 - `npm run agent:product:test`
 - `npm run agent:product:inspect:test`
 - `npm run agent:product:execute:test`

@@ -18,9 +18,13 @@ export const RESTRICTED_PRODUCT_KEYWORDS = [
 
 export type AgentState =
   | "idle"
+  | "paused"
   | "running_research"
+  | "running_product_creation"
   | "research_complete"
+  | "product_creation_complete"
   | "blocked_low_signal"
+  | "blocked_manual_review"
   | "error";
 
 export type SourceMode = "direct_fetch" | "search_backed" | "authenticated";
@@ -140,6 +144,10 @@ export interface AgentCycleRecord {
   startedAt: string;
   completedAt: string;
   result: ResearchCycleResult;
+  productCreation?: {
+    plan: ProductCreationResult;
+    execution?: PrintfulDraftExecutionResult;
+  };
 }
 
 export interface StoredAgentState {
@@ -148,6 +156,8 @@ export interface StoredAgentState {
   lastHeartbeat: string | null;
   lastResultPath?: string;
   lastError?: string;
+  consecutiveRuntimeFailures?: number;
+  pausedUntil?: string;
 }
 
 export interface SourceDocument {

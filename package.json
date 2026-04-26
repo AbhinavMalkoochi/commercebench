@@ -14,6 +14,7 @@
     "agent:tools:test": "tsx agent/cli/tool-smoke-test.ts",
     "agent:runtime:test": "tsx agent/cli/runtime-smoke-test.ts",
     "agent:budget:test": "tsx agent/cli/budget-smoke-test.ts",
+    "agent:pause:test": "tsx agent/cli/pause-smoke-test.ts",
     "agent:approval:test": "tsx agent/cli/approval-smoke-test.ts",
     "agent:product:test": "tsx agent/cli/product-creation-smoke-test.ts",
     "agent:product:inspect:test": "tsx agent/cli/printful-draft-inspector-smoke-test.ts",
