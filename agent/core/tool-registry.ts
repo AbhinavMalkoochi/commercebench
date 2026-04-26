@@ -13,9 +13,13 @@ import { getCjAccessTokenTool } from "@/agent/tools/get-cj-access-token";
 import { getPrintfulMockupTaskTool } from "@/agent/tools/get-printful-mockup-task";
 import { getPrintfulProductsTool } from "@/agent/tools/get-printful-products";
 import { getPrintfulVariantPricesTool } from "@/agent/tools/get-printful-variant-prices";
+import { getTikTokAccessTokenTool } from "@/agent/tools/get-tiktok-access-token";
 import { getTikTokAffiliateTool } from "@/agent/tools/get-tiktok-affiliate";
+import { getTikTokAuthorizedShopsTool } from "@/agent/tools/get-tiktok-authorized-shops";
 import { queryCjProductsTool } from "@/agent/tools/query-cj-products";
 import { refreshCjAccessTokenTool } from "@/agent/tools/refresh-cj-access-token";
+import { refreshTikTokAccessTokenTool } from "@/agent/tools/refresh-tiktok-access-token";
+import { searchTikTokProductsTool } from "@/agent/tools/search-tiktok-products";
 
 const REGISTERED_TOOLS = [
   fetchWebPageTool,
@@ -25,9 +29,13 @@ const REGISTERED_TOOLS = [
   getPrintfulMockupTaskTool,
   getPrintfulProductsTool,
   getPrintfulVariantPricesTool,
+  getTikTokAccessTokenTool,
   getTikTokAffiliateTool,
+  getTikTokAuthorizedShopsTool,
   queryCjProductsTool,
   refreshCjAccessTokenTool,
+  refreshTikTokAccessTokenTool,
+  searchTikTokProductsTool,
 ] as const satisfies readonly AnyAgentToolDefinition[];
 
 export class StaticToolRegistry implements AgentToolRegistry {

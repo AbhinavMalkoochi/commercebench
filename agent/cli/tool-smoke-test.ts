@@ -103,6 +103,69 @@ const CJ_REFRESH_ACCESS_TOKEN_FIXTURE = {
   },
 };
 
+const TIKTOK_ACCESS_TOKEN_FIXTURE = {
+  code: 0,
+  message: "success",
+  data: {
+    access_token: "tts-access-token",
+    refresh_token: "tts-refresh-token",
+    access_token_expire_in: 604800,
+    refresh_token_expire_in: 5184000,
+    open_id: "open-123",
+    seller_name: "useorune",
+  },
+};
+
+const TIKTOK_REFRESH_TOKEN_FIXTURE = {
+  code: 0,
+  message: "success",
+  data: {
+    access_token: "tts-access-token-refreshed",
+    refresh_token: "tts-refresh-token-refreshed",
+    access_token_expire_in: 604800,
+    refresh_token_expire_in: 5184000,
+    open_id: "open-123",
+    seller_name: "useorune",
+  },
+};
+
+const TIKTOK_AUTHORIZED_SHOPS_FIXTURE = {
+  code: 0,
+  message: "success",
+  data: {
+    shops: [
+      {
+        id: "shop-123",
+        cipher: "cipher-123",
+        code: "US",
+        name: "UseOrRune US",
+        region: "US",
+        seller_type: "LOCAL",
+      },
+    ],
+  },
+};
+
+const TIKTOK_SEARCH_PRODUCTS_FIXTURE = {
+  code: 0,
+  message: "success",
+  data: {
+    total_count: 1,
+    next_page_token: "",
+    products: [
+      {
+        id: "tts-prod-1",
+        title: "Hydrocolloid Pimple Patches",
+        status: "DRAFT",
+        skus: [{ id: "sku-1" }],
+        sales_regions: ["US"],
+        listing_quality_tier: "GOOD",
+        audit: { status: "AUDITING" },
+      },
+    ],
+  },
+};
+
 const CJ_PRODUCTS_FIXTURE = {
   products: [
     {
@@ -172,6 +235,35 @@ async function main(): Promise<void> {
 
     if (url.includes("/authentication/refreshAccessToken")) {
       return new Response(JSON.stringify(CJ_REFRESH_ACCESS_TOKEN_FIXTURE), {
+        status: 200,
+        headers: {
+          "content-type": "application/json",
+        },
+      });
+    }
+
+    if (url.startsWith("https://auth.tiktok-shops.com")) {
+      return new Response(JSON.stringify(
+        url.includes("refresh_token") ? TIKTOK_REFRESH_TOKEN_FIXTURE : TIKTOK_ACCESS_TOKEN_FIXTURE,
+      ), {
+        status: 200,
+        headers: {
+          "content-type": "application/json",
+        },
+      });
+    }
+
+    if (url.includes("/authorization/202309/shops")) {
+      return new Response(JSON.stringify(TIKTOK_AUTHORIZED_SHOPS_FIXTURE), {
+        status: 200,
+        headers: {
+          "content-type": "application/json",
+        },
+      });
+    }
+
+    if (url.includes("/product/202502/products/search")) {
+      return new Response(JSON.stringify(TIKTOK_SEARCH_PRODUCTS_FIXTURE), {
         status: 200,
         headers: {
           "content-type": "application/json",
@@ -322,6 +414,61 @@ async function main(): Promise<void> {
     },
   );
 
+  const tiktokAccessToken = await executor.execute(
+    "get_tiktok_access_token",
+    {
+      appKey: "tt-app-key",
+      appSecret: "tt-app-secret",
+      authCode: "auth-code",
+    },
+    {
+      now: new Date("2026-04-26T00:00:00.000Z"),
+      fetchImpl: productCreationFetch,
+    },
+  );
+
+  const tiktokRefreshedToken = await executor.execute(
+    "refresh_tiktok_access_token",
+    {
+      appKey: "tt-app-key",
+      appSecret: "tt-app-secret",
+      refreshToken: "tts-refresh-token",
+    },
+    {
+      now: new Date("2026-04-26T00:00:00.000Z"),
+      fetchImpl: productCreationFetch,
+    },
+  );
+
+  const tiktokAuthorizedShops = await executor.execute(
+    "get_tiktok_authorized_shops",
+    {
+      appKey: "tt-app-key",
+      appSecret: "tt-app-secret",
+      accessToken: "tts-access-token",
+    },
+    {
+      now: new Date("2026-04-26T00:00:00.000Z"),
+      fetchImpl: productCreationFetch,
+    },
+  );
+
+  const tiktokProducts = await executor.execute(
+    "search_tiktok_products",
+    {
+      appKey: "tt-app-key",
+      appSecret: "tt-app-secret",
+      accessToken: "tts-access-token",
+      shopCipher: "cipher-123",
+      status: "DRAFT",
+      pageSize: 10,
+    },
+    {
+      now: new Date("2026-04-26T00:00:00.000Z"),
+      fetchImpl: productCreationFetch,
+    },
+  );
+
   const storeProduct = await executor.execute(
     "create_printful_store_product",
     {
@@ -365,9 +512,10 @@ async function main(): Promise<void> {
     },
   );
 
-  assert.equal(registry.listTools().length, 10);
+  assert.equal(registry.listTools().length, 14);
   assert.equal(registry.listToolsForStage("research").length, 1);
   assert.equal(registry.listToolsForStage("product_creation").length, 8);
+  assert.equal(registry.listToolsForStage("listing").length, 4);
   assert.equal(fetchResult.title, "Research Fixture");
   assert.equal(fetchResult.text.includes("Current page text"), true);
   assert.equal(printfulProducts.products[0]?.name, "Unisex Staple T-Shirt");
@@ -376,6 +524,10 @@ async function main(): Promise<void> {
   assert.equal(mockupTask.taskId, 597350033);
   assert.equal(cjAccessToken.accessToken, "cj-access-token");
   assert.equal(cjRefreshedToken.accessToken, "cj-access-token-refreshed");
+  assert.equal(tiktokAccessToken.accessToken, "tts-access-token");
+  assert.equal(tiktokRefreshedToken.accessToken, "tts-access-token-refreshed");
+  assert.equal(tiktokAuthorizedShops.shops[0]?.cipher, "cipher-123");
+  assert.equal(tiktokProducts.products[0]?.title, "Hydrocolloid Pimple Patches");
   assert.equal(mockupTaskResult.assets[0]?.mockupUrl, "https://example.com/mockup.png");
   assert.equal(storeProduct.productId, 7001);
   assert.equal(cjProducts.products[0]?.productId, "cj-123");

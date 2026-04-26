@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 
 import { buildListingDraft } from "@/agent/core/listing-draft-builder";
 import { planProductCreation } from "@/agent/core/product-creation-kernel";
-import { CandidatePortfolioEntry, PrintfulDraftExecutionResult, ResearchSignal } from "@/agent/core/types";
+import { CandidatePortfolioEntry, CjDraftExecutionResult, PrintfulDraftExecutionResult, ResearchSignal } from "@/agent/core/types";
 
 function createSignal(input: {
   label: string;
@@ -67,14 +67,14 @@ function createCandidate(): CandidatePortfolioEntry {
 }
 
 async function main(): Promise<void> {
-  const plan = planProductCreation({
+  const printfulPlan = planProductCreation({
     candidate: createCandidate(),
     maxRetailPrice: 60,
     targetMarginFloor: 0.35,
   });
 
-  assert.equal(plan.status, "draft_ready");
-  assert.ok(plan.draft);
+  assert.equal(printfulPlan.status, "draft_ready");
+  assert.ok(printfulPlan.draft);
 
   const execution: PrintfulDraftExecutionResult = {
     status: "ready",
@@ -116,15 +116,56 @@ async function main(): Promise<void> {
     },
   };
 
-  const listingDraft = buildListingDraft(plan.draft, execution);
+  const listingDraft = buildListingDraft(printfulPlan.draft, execution);
 
   assert.equal(listingDraft.status, "ready");
   assert.equal(listingDraft.artifact?.title, "Graphic T-Shirts launch draft");
   assert.equal(listingDraft.artifact?.heroImageUrl, "https://example.com/mockup.png");
   assert.equal(listingDraft.artifact?.productHandle, "graphic-tshirts-7001");
 
+  const cjPlan = planProductCreation({
+    candidate: {
+      ...createCandidate(),
+      key: "pimple-patches",
+      label: "Hydrocolloid Pimple Patches",
+      tags: ["beauty", "skincare", "patches"],
+    },
+    maxRetailPrice: 60,
+    targetMarginFloor: 0.35,
+    preferredProvider: "cj_dropshipping",
+  });
+
+  assert.equal(cjPlan.status, "draft_ready");
+  assert.equal(cjPlan.draft?.blueprint.provider, "cj_dropshipping");
+
+  const cjExecution: CjDraftExecutionResult = {
+    status: "ready",
+    reasoning: "fixture CJ execution",
+    selection: {
+      productId: "cj-123",
+      name: "Hydrocolloid Acne Patch 72pcs",
+      sku: "CJ-PATCH-72",
+      price: 3.25,
+      sourceUrl: "https://developers.cjdropshipping.com/api2.0/v1/product/query",
+    },
+    authentication: {
+      sourceUrl: "https://developers.cjdropshipping.com/api2.0/v1/authentication/getAccessToken",
+      openId: 123456789,
+      accessTokenExpiryDate: "2026-05-11T09:16:33+08:00",
+      refreshTokenExpiryDate: "2026-10-23T09:16:33+08:00",
+    },
+  };
+
+  const cjListingDraft = buildListingDraft(cjPlan.draft!, cjExecution);
+
+  assert.equal(cjListingDraft.status, "ready");
+  assert.equal(cjListingDraft.artifact?.title, "Hydrocolloid Pimple Patches launch draft");
+  assert.equal(cjListingDraft.artifact?.productHandle, "pimple-patches-cj-123");
+  assert.equal(cjListingDraft.artifact?.heroImageUrl, undefined);
+
   console.log("Listing draft smoke test passed.");
-  console.log(`Listing handle: ${listingDraft.artifact?.productHandle}`);
+  console.log(`Printful listing handle: ${listingDraft.artifact?.productHandle}`);
+  console.log(`CJ listing handle: ${cjListingDraft.artifact?.productHandle}`);
 }
 
 void main().catch((error) => {

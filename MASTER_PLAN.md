@@ -157,6 +157,8 @@ This is the first step toward a general tool plane where the agent can select na
 - Added hardcoded `get_cj_access_token()` and `refresh_cj_access_token()` tools in `agent/tools/`.
 - Added a CJ draft inspector in `agent/core/cj-draft-inspector.ts`.
 - Added a CJ draft executor in `agent/core/cj-draft-executor.ts`.
+- Added TikTok Shop SDK-backed auth, authorized-shop, and product-search tools.
+- Extended local listing-draft generation so CJ-backed execution now produces a TikTok Shop-ready draft artifact instead of stopping at `skipped`.
 - Added a smoke test in `agent/cli/cj-draft-inspector-smoke-test.ts`.
 - Added a smoke test in `agent/cli/cj-draft-executor-smoke-test.ts`.
 - Added the command `npm run agent:cj:inspect:test`.
@@ -218,7 +220,7 @@ Tasks:
 3. Add a product execution result type that records selected CJ products, variants where applicable, pricing, and downstream listing inputs.
 4. Keep payment steps explicitly gated and manual-only.
 
-The first CJ sourcing read slice, the first CJ auth/token slice, and the first CJ executor slice are now implemented. Full CJ execution still remains next.
+The first CJ sourcing read slice, the first CJ auth/token slice, the first CJ executor slice, the first TikTok listing-auth slice, and the first CJ-to-TikTok listing-prep slice are now implemented. Full CJ execution and TikTok product creation still remain next.
 
 ### Phase 3. Upgrade Research From Fixed Planning To Model-Led Planning
 

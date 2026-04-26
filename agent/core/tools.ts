@@ -58,6 +58,79 @@ export interface GetTikTokAffiliateOutput {
   notes: string[];
 }
 
+export interface GetTikTokAccessTokenInput {
+  appKey: string;
+  appSecret: string;
+  authCode: string;
+}
+
+export interface RefreshTikTokAccessTokenInput {
+  appKey: string;
+  appSecret: string;
+  refreshToken: string;
+}
+
+export interface TikTokAccessTokenOutput {
+  fetchedAt: string;
+  sourceUrl: string;
+  accessToken: string;
+  refreshToken: string;
+  accessTokenExpireInSeconds?: number;
+  refreshTokenExpireInSeconds?: number;
+  openId?: string;
+  sellerName?: string;
+}
+
+export interface TikTokAuthorizedShop {
+  id: string;
+  cipher: string;
+  code?: string;
+  name?: string;
+  region?: string;
+  sellerType?: string;
+}
+
+export interface GetTikTokAuthorizedShopsInput {
+  appKey: string;
+  appSecret: string;
+  accessToken: string;
+}
+
+export interface GetTikTokAuthorizedShopsOutput {
+  fetchedAt: string;
+  sourceUrl: string;
+  shops: TikTokAuthorizedShop[];
+}
+
+export interface TikTokShopProductSummary {
+  id: string;
+  title: string;
+  status: string;
+  skuCount: number;
+  salesRegions: string[];
+  listingQualityTier?: string;
+  auditStatus?: string;
+}
+
+export interface SearchTikTokProductsInput {
+  appKey: string;
+  appSecret: string;
+  accessToken: string;
+  shopCipher: string;
+  pageSize?: number;
+  pageToken?: string;
+  status?: "ALL" | "DRAFT" | "PENDING" | "FAILED" | "ACTIVATE" | "SELLER_DEACTIVATED" | "PLATFORM_DEACTIVATED" | "FREEZE" | "DELETED";
+  sellerSkus?: string[];
+}
+
+export interface SearchTikTokProductsOutput {
+  fetchedAt: string;
+  sourceUrl: string;
+  totalCount: number;
+  nextPageToken?: string;
+  products: TikTokShopProductSummary[];
+}
+
 export interface FetchWebPageInput {
   url: string;
   maxCharacters?: number;
@@ -273,6 +346,22 @@ export type AgentToolMap = {
   get_tiktok_affiliate: {
     input: GetTikTokAffiliateInput;
     output: GetTikTokAffiliateOutput;
+  };
+  get_tiktok_access_token: {
+    input: GetTikTokAccessTokenInput;
+    output: TikTokAccessTokenOutput;
+  };
+  refresh_tiktok_access_token: {
+    input: RefreshTikTokAccessTokenInput;
+    output: TikTokAccessTokenOutput;
+  };
+  get_tiktok_authorized_shops: {
+    input: GetTikTokAuthorizedShopsInput;
+    output: GetTikTokAuthorizedShopsOutput;
+  };
+  search_tiktok_products: {
+    input: SearchTikTokProductsInput;
+    output: SearchTikTokProductsOutput;
   };
 };
 
