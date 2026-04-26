@@ -152,12 +152,12 @@ export class FixtureSearchProvider implements SearchProvider {
             priceMax: 35,
           }),
         ];
-      case "tiktok_creator_search":
+      case "tiktok_shop_search":
         return [
           fixtureSignal(plan, 1, {
             label: "Hydrocolloid Pimple Patches",
-            summary: "Small creators are using pimple patches inside GRWM and event-prep content because the product demo is instant.",
-            tags: ["grwm", "skincare", "beauty", "event"],
+            summary: "TikTok Shop listings and videos keep surfacing pimple patches as a fast-conversion beauty product with immediate proof.",
+            tags: ["tiktokshop", "skincare", "beauty", "event"],
             freshness: 0.93,
             visualDemo: 0.93,
             creatorAppeal: 0.91,
@@ -181,6 +181,37 @@ export class FixtureSearchProvider implements SearchProvider {
             seasonality: 0.72,
             confidence: 0.84,
             priceMax: 29,
+          }),
+        ];
+      case "tiktok_made_me_buy_it_search":
+        return [
+          fixtureSignal(plan, 1, {
+            label: "Hydrocolloid Pimple Patches",
+            summary: "TikTok-made-me-buy-it roundups keep calling out pimple patches as a cheap, easy impulse purchase with visible results.",
+            tags: ["tiktokmademebuyit", "skincare", "beauty", "impulsebuy"],
+            freshness: 0.94,
+            visualDemo: 0.92,
+            creatorAppeal: 0.88,
+            purchaseIntent: 0.86,
+            priceFit: 0.96,
+            saturationResistance: 0.54,
+            seasonality: 0.81,
+            confidence: 0.9,
+            priceMax: 18,
+          }),
+          fixtureSignal(plan, 2, {
+            label: "Portable Bladeless Neck Fans",
+            summary: "Seasonal summer products are appearing, but they are more price-sensitive and more crowded than pimple patches.",
+            tags: ["summer", "portable", "cooling", "travel"],
+            freshness: 0.87,
+            visualDemo: 0.84,
+            creatorAppeal: 0.78,
+            purchaseIntent: 0.73,
+            priceFit: 0.74,
+            saturationResistance: 0.42,
+            seasonality: 0.92,
+            confidence: 0.81,
+            priceMax: 39,
           }),
         ];
       case "tiktok_hashtag_search":

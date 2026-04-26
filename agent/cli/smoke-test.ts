@@ -5,10 +5,8 @@ import path from "node:path";
 import { AgentLoop } from "@/agent/core/agent-loop";
 import { HeuristicReasoner } from "@/agent/core/reasoner";
 import { FileStateStore } from "@/agent/infrastructure/file-state-store";
-import { FixtureHtmlSourceClient } from "@/agent/infrastructure/html-source-client";
 import {
   FixtureSearchProvider,
-  getFixtureHtmlDocuments,
 } from "@/agent/sources/fixtures";
 
 async function main(): Promise<void> {
@@ -19,7 +17,6 @@ async function main(): Promise<void> {
   const loop = new AgentLoop(
     new FileStateStore(stateDirectory),
     {
-      htmlClient: new FixtureHtmlSourceClient(getFixtureHtmlDocuments()),
       searchProvider: new FixtureSearchProvider(),
       reasoner: new HeuristicReasoner(),
     },

@@ -7,12 +7,11 @@ import {
   ResearchDecision,
   ResearchReasoner,
 } from "@/agent/core/types";
+import { FileResearchTrace } from "@/agent/infrastructure/file-research-trace";
 
 const decisionSchema = z.object({
   selectedCandidateKey: z.string(),
   backupCandidateKeys: z.array(z.string()).max(2),
-  targetPersona: z.string(),
-  marketingAngle: z.string(),
   reasoning: z.string(),
 });
 
@@ -42,8 +41,6 @@ export class HeuristicReasoner implements ResearchReasoner {
     return {
       selectedCandidateKey: selectedCandidate.key,
       backupCandidateKeys: rest.slice(0, 2).map((candidate) => candidate.key),
-      targetPersona: `Impulse buyer interested in ${selectedCandidate.tags.slice(0, 2).join(" and ")}`,
-      marketingAngle: selectedCandidate.score.reasons[0] ?? "fast visual proof",
       reasoning: `${selectedCandidate.label} won because it combined ${selectedCandidate.score.reasons.join(
         ", ",
       )} across ${selectedCandidate.sourceIds.length} sources.`,
@@ -55,6 +52,7 @@ export class OpenAiReasoner implements ResearchReasoner {
   constructor(
     private readonly client: OpenAI,
     private readonly model = "gpt-5.4",
+    private readonly trace?: FileResearchTrace,
   ) {}
 
   async decide(input: {
@@ -67,21 +65,47 @@ export class OpenAiReasoner implements ResearchReasoner {
       throw new Error("Cannot ask OpenAI to select from an empty candidate set.");
     }
 
+    const prompt = [
+      "You are selecting one ecommerce research candidate.",
+      "Only choose from the provided candidates.",
+      "Prefer the strongest fresh trend with creator appeal, purchase intent, visual demo strength, and sub-$100 price fit.",
+      "Do not do marketing planning. Only select the best product to sell now.",
+      `Date: ${input.now.toISOString()}`,
+      topCandidates.map(buildCandidateSnapshot).join("\n"),
+    ].join("\n\n");
+
+    if (this.trace) {
+      await Promise.all([
+        this.trace.writeText("reasoner/prompt.txt", prompt),
+        this.trace.writeJson("reasoner/candidates.json", topCandidates),
+        this.trace.recordEvent("reasoner_started", {
+          candidateCount: topCandidates.length,
+          model: this.model,
+        }),
+      ]);
+    }
+
     const response = await this.client.responses.parse({
       model: this.model,
-      input: [
-        "You are selecting one ecommerce research candidate.",
-        "Only choose from the provided candidates.",
-        "Prefer the strongest fresh trend with creator appeal, visual demo strength, and sub-$100 price fit.",
-        `Date: ${input.now.toISOString()}`,
-        topCandidates.map(buildCandidateSnapshot).join("\n"),
-      ].join("\n\n"),
+      input: prompt,
       text: {
         format: zodTextFormat(decisionSchema, "research_decision"),
       },
     });
 
     const parsed = response.output_parsed;
+
+    if (this.trace) {
+      await Promise.all([
+        this.trace.writeJson("reasoner/response.json", {
+          outputText: response.output_text,
+          parsed,
+        }),
+        this.trace.recordEvent("reasoner_completed", {
+          selectedCandidateKey: parsed?.selectedCandidateKey,
+        }),
+      ]);
+    }
 
     if (!parsed) {
       throw new Error("OpenAI reasoner returned an empty parsed response.");

@@ -12,22 +12,28 @@ export function buildResearchQueryPlan(now: Date): QueryPlan[] {
 
   return [
     {
-      id: "query-tiktok-products",
+      id: "query-tiktok-creative-center-products",
       sourceId: "tiktok_creative_center",
-      query: `tiktok shop trending products ${monthYear}`,
+      query: `tiktok creative center top products ${monthYear}`,
       allowedDomains: ["ads.tiktok.com", "tiktok.com"],
     },
     {
-      id: "query-tiktok-creators",
-      sourceId: "tiktok_creator_search",
-      query: `what creators are posting on tiktok this week ${monthYear} for products and ecommerce`,
+      id: "query-tiktok-shop-trending",
+      sourceId: "tiktok_shop_search",
+      query: `tiktok shop trending products ${monthYear}`,
       allowedDomains: ["tiktok.com", "ads.tiktok.com"],
     },
     {
       id: "query-tiktok-hashtags",
       sourceId: "tiktok_hashtag_search",
       query: `tiktok trending product hashtags ${monthYear}`,
-      allowedDomains: ["ads.tiktok.com", "tiktok.com", "shopify.com"],
+      allowedDomains: ["ads.tiktok.com", "tiktok.com"],
+    },
+    {
+      id: "query-tiktok-made-me-buy-it",
+      sourceId: "tiktok_made_me_buy_it_search",
+      query: `tiktok made me buy it products ${monthYear}`,
+      allowedDomains: ["tiktok.com", "ads.tiktok.com", "shopify.com"],
     },
     {
       id: "query-shopify-products",
@@ -52,12 +58,6 @@ export function buildResearchQueryPlan(now: Date): QueryPlan[] {
       sourceId: "cj_tiktok_products",
       query: `cjdropshipping tiktok viral products ${monthYear}`,
       allowedDomains: ["cjdropshipping.com"],
-    },
-    {
-      id: "query-pinterest-predicts",
-      sourceId: "pinterest_predicts",
-      query: `pinterest predicts shopping trends ${monthYear}`,
-      allowedDomains: ["business.pinterest.com", "pinterest.com"],
     },
   ];
 }

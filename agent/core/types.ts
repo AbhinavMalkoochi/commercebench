@@ -28,13 +28,13 @@ export type SignalKind = "candidate" | "market_theme";
 
 export type SourceId =
   | "tiktok_creative_center"
-  | "tiktok_creator_search"
+  | "tiktok_shop_search"
   | "tiktok_hashtag_search"
+  | "tiktok_made_me_buy_it_search"
   | "shopify_tiktok_products"
   | "shopify_tiktok_trends"
   | "cj_winning_products"
-  | "cj_tiktok_products"
-  | "pinterest_predicts";
+  | "cj_tiktok_products";
 
 export interface SourceCapability {
   id: SourceId;
@@ -114,8 +114,6 @@ export interface CandidatePortfolioEntry {
 export interface ResearchDecision {
   selectedCandidateKey: string;
   backupCandidateKeys: string[];
-  targetPersona: string;
-  marketingAngle: string;
   reasoning: string;
 }
 

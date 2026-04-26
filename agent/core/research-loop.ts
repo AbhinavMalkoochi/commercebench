@@ -4,22 +4,19 @@ import {
   QueryPlan,
   ResearchCycleResult,
   ResearchReasoner,
+  ResearchSignal,
   SearchProvider,
   SourceCapability,
 } from "@/agent/core/types";
 import { buildResearchQueryPlan } from "@/agent/core/query-planner";
 import { buildCandidatePortfolio, countUsefulCandidateSignals } from "@/agent/core/scoring";
-import { HtmlSourceClient } from "@/agent/core/types";
-import {
-  DIRECT_SOURCE_IDS,
-  SOURCE_CAPABILITIES,
-  loadDirectSignals,
-} from "@/agent/sources/catalog";
+import { SOURCE_CAPABILITIES } from "@/agent/sources/catalog";
+import { FileResearchTrace } from "@/agent/infrastructure/file-research-trace";
 
 export interface ResearchLoopDependencies {
-  htmlClient: HtmlSourceClient;
   reasoner: ResearchReasoner;
   searchProvider?: SearchProvider;
+  trace?: FileResearchTrace;
 }
 
 const SOURCE_OPERATION_TIMEOUT_MS = 90_000;
@@ -55,31 +52,42 @@ export async function runResearchLoop(
 ): Promise<ResearchCycleResult> {
   const startedAt = now.toISOString();
   const queries = buildResearchQueryPlan(now);
-  const signalSets = await Promise.all(
+
+  await dependencies.trace?.writeJson("loop/query-plan.json", queries);
+  await dependencies.trace?.recordEvent("research_loop_started", {
+    startedAt,
+    queryCount: queries.length,
+  });
+
+  const signalSets = await Promise.all<ResearchSignal[]>(
     queries.map(async (query) => {
-      if (DIRECT_SOURCE_IDS.has(query.sourceId)) {
-        try {
-          return await withTimeout(
-            loadDirectSignals(query, dependencies.htmlClient, now),
-            SOURCE_OPERATION_TIMEOUT_MS,
-            query.sourceId,
-          );
-        } catch {
-          return [];
-        }
-      }
+      await dependencies.trace?.recordEvent("query_started", {
+        queryId: query.id,
+        sourceId: query.sourceId,
+        mode: "search_backed",
+      });
 
       if (!dependencies.searchProvider) {
         return [];
       }
 
       try {
-        return await withTimeout(
+        const searchSignals = await withTimeout(
           dependencies.searchProvider.searchSignals(query, now),
           SOURCE_OPERATION_TIMEOUT_MS,
           query.sourceId,
         );
+        await dependencies.trace?.recordEvent("query_completed", {
+          queryId: query.id,
+          sourceId: query.sourceId,
+          signalCount: searchSignals.length,
+        });
+        return searchSignals;
       } catch {
+        await dependencies.trace?.recordEvent("query_failed", {
+          queryId: query.id,
+          sourceId: query.sourceId,
+        });
         return [];
       }
     }),
@@ -91,13 +99,24 @@ export async function runResearchLoop(
   const gatePassingCandidates = candidates.filter((candidate) => candidate.score.gatePassed);
   const completedAt = new Date().toISOString();
 
+  await Promise.all([
+    dependencies.trace?.writeJson("loop/signals.json", signals),
+    dependencies.trace?.writeJson("loop/candidates.json", candidates),
+    dependencies.trace?.recordEvent("research_scoring_completed", {
+      signalCount: signals.length,
+      candidateCount: candidates.length,
+      gatePassingCandidateCount: gatePassingCandidates.length,
+      usefulSignalCount,
+    }),
+  ]);
+
   if (
     queries.length < MINIMUM_QUERY_COUNT ||
     usefulSignalCount < MINIMUM_USEFUL_SIGNAL_COUNT ||
     gatePassingCandidates.length === 0
   ) {
-    return {
-      status: "blocked_low_signal",
+    const blockedResult = {
+      status: "blocked_low_signal" as const,
       startedAt,
       completedAt,
       queries,
@@ -106,6 +125,18 @@ export async function runResearchLoop(
       backupCandidates: [],
       reasoning: buildBlockedReason(queries, usefulSignalCount),
       sourceAudit: listSourceAudit(),
+    };
+
+    await Promise.all([
+      dependencies.trace?.writeJson("loop/result.json", blockedResult),
+      dependencies.trace?.recordEvent("research_loop_blocked", {
+        completedAt,
+        reasoning: blockedResult.reasoning,
+      }),
+    ]);
+
+    return {
+      ...blockedResult,
     };
   }
 
@@ -125,7 +156,7 @@ export async function runResearchLoop(
       decision.backupCandidateKeys.includes(candidate.key),
   );
 
-  return {
+  const passedResult: ResearchCycleResult = {
     status: "passed",
     startedAt,
     completedAt,
@@ -138,4 +169,14 @@ export async function runResearchLoop(
     reasoning: decision.reasoning,
     sourceAudit: listSourceAudit(),
   };
+
+  await Promise.all([
+    dependencies.trace?.writeJson("loop/result.json", passedResult),
+    dependencies.trace?.recordEvent("research_loop_passed", {
+      completedAt,
+      selectedCandidateKey: selectedCandidate.key,
+    }),
+  ]);
+
+  return passedResult;
 }

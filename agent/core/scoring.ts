@@ -59,20 +59,6 @@ function getCombinedPriceBand(signals: ResearchSignal[]): number | undefined {
   return Math.max(...maxValues);
 }
 
-function buildThemeAlignment(candidateTags: string[], marketSignals: ResearchSignal[]): number {
-  const marketTags = new Set(
-    marketSignals.flatMap((signal) => signal.tags.map((tag) => tag.toLowerCase())),
-  );
-  const candidateTagSet = new Set(candidateTags.map((tag) => tag.toLowerCase()));
-  const overlap = [...candidateTagSet].filter((tag) => marketTags.has(tag));
-
-  if (candidateTagSet.size === 0) {
-    return 0;
-  }
-
-  return clamp(overlap.length / Math.min(candidateTagSet.size, 4));
-}
-
 function buildReasons(score: Omit<CandidateScore, "gatePassed" | "gateReasons" | "reasons">): string[] {
   const rankedReasons: Array<[string, number]> = [
     ["fresh demand signal", score.freshness],
@@ -103,7 +89,6 @@ function scoreCandidate(
   label: string,
   tags: string[],
   evidence: ResearchSignal[],
-  marketSignals: ResearchSignal[],
 ): CandidateScore {
   const sourceDiversity = unique(evidence.map((signal) => signal.sourceId)).length;
   const maxPrice = getCombinedPriceBand(evidence);
@@ -120,11 +105,7 @@ function scoreCandidate(
   const saturationResistance = average(
     evidence.map((signal) => signal.metrics.saturationResistance),
   );
-  const themeAlignment = buildThemeAlignment(tags, marketSignals);
-  const seasonality = clamp(
-    average(evidence.map((signal) => signal.metrics.seasonality)) * 0.75 +
-      themeAlignment * 0.25,
-  );
+  const seasonality = average(evidence.map((signal) => signal.metrics.seasonality));
   const signalCoverage = clamp((evidence.length / 4) * Math.min(sourceDiversity / 3, 1));
   const confidenceMultiplier = clamp(
     0.7 + average(evidence.map((signal) => signal.confidence)) * 0.3,
@@ -192,7 +173,6 @@ export function buildCandidatePortfolio(signals: ResearchSignal[]): CandidatePor
     (signal): signal is ResearchSignal & { label: string } =>
       signal.kind === "candidate" && typeof signal.label === "string",
   );
-  const marketSignals = signals.filter((signal) => signal.kind === "market_theme");
 
   const groupedSignals = new Map<string, ResearchSignal[]>();
   const labelByKey = new Map<string, string>();
@@ -221,7 +201,7 @@ export function buildCandidatePortfolio(signals: ResearchSignal[]): CandidatePor
         tags,
         evidence,
         sourceIds: unique(evidence.map((signal) => signal.sourceId)),
-        score: scoreCandidate(label, tags, evidence, marketSignals),
+        score: scoreCandidate(label, tags, evidence),
       };
     })
     .sort((left, right) => right.score.total - left.score.total);
