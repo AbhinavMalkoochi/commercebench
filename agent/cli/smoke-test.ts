@@ -34,6 +34,7 @@ async function main(): Promise<void> {
   assert.equal(selected.label, "Hydrocolloid Pimple Patches");
   assert.equal(record.productCreation?.plan.status, "draft_ready");
   assert.equal(record.productCreation?.plan.draft?.fulfillmentProvider, "cj_dropshipping");
+  assert.equal(record.listingDraft?.status, "skipped");
   assert.ok(record.result.candidates.length >= 3, "Expected at least three ranked candidates.");
   assert.ok(
     record.result.queries.length >= 8,

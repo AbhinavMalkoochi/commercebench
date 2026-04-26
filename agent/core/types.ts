@@ -148,6 +148,7 @@ export interface AgentCycleRecord {
     plan: ProductCreationResult;
     execution?: PrintfulDraftExecutionResult;
   };
+  listingDraft?: ListingDraftResult;
 }
 
 export interface StoredAgentState {
@@ -300,6 +301,24 @@ export interface PrintfulDraftExecutionResult {
   selection?: PrintfulDraftInspectionSelection;
   mockup?: PrintfulDraftExecutionMockup;
   storeProduct?: PrintfulDraftExecutionStoreProduct;
+}
+
+export interface ListingDraftArtifact {
+  title: string;
+  subtitle: string;
+  description: string;
+  bullets: string[];
+  tags: string[];
+  heroImageUrl?: string;
+  productHandle: string;
+  retailPrice: number;
+  compareAtPrice?: number;
+}
+
+export interface ListingDraftResult {
+  status: "ready" | "skipped" | "blocked";
+  reasoning: string;
+  artifact?: ListingDraftArtifact;
 }
 
 export interface BudgetLedgerEntry {

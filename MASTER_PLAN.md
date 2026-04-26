@@ -173,9 +173,11 @@ This is the first step toward a general tool plane where the agent can select na
 - Registered the new Printful mockup tools in the static registry.
 - Added a Printful draft executor in `agent/core/printful-draft-executor.ts` that bridges inspected drafts into mockup-task execution artifacts.
 - Extended the Printful draft executor so it can optionally create a guarded store-product draft after mockup generation.
+- Added a local listing-draft builder in `agent/core/listing-draft-builder.ts` that turns Printful draft artifacts into a non-published listing draft.
 - Extended the runtime smoke test to verify approval-gated execution for Printful mockup creation.
 - Added a smoke test in `agent/cli/approval-smoke-test.ts`.
 - Added a smoke test in `agent/cli/printful-draft-executor-smoke-test.ts`.
+- Added a smoke test in `agent/cli/listing-draft-smoke-test.ts`.
 - Added the command `npm run agent:approval:test`.
 - Added the command `npm run agent:product:execute:test`.
 
@@ -205,7 +207,7 @@ Tasks:
 3. Add a product execution result type that records chosen product shell, variants, pricing, and generated assets.
 4. Keep publish and payment steps explicitly gated.
 
-The read-only inspection step, approval-gated mockup execution, and guarded store-product draft creation are now implemented. Live publish actions still remain gated and out of scope.
+The read-only inspection step, approval-gated mockup execution, guarded store-product draft creation, and local listing-draft generation are now implemented. Live publish actions still remain gated and out of scope.
 
 ### Phase 3. Upgrade Research From Fixed Planning To Model-Led Planning
 
@@ -241,7 +243,7 @@ Tasks:
 2. Keep replacing the remaining single-purpose loop boundary in the main worker with the newer general task-runner model, starting from the now-wired research-to-product-creation handoff.
 3. Harden the new pause behavior into broader circuit breakers across more runtime subsystems, not only the main loop.
 4. Add the next provider execution slice after Printful, starting with CJ sourcing reads and guarded draft creation.
-5. Add the first listing-draft stage that can consume the new Printful store-product draft artifacts without publishing live.
+5. Extend the new listing-draft stage toward provider-backed listing drafts while keeping publish actions gated.
 
 ## Verification Baseline
 
@@ -257,6 +259,7 @@ These commands should stay green while the architecture evolves:
 - `npm run agent:product:test`
 - `npm run agent:product:inspect:test`
 - `npm run agent:product:execute:test`
+- `npm run agent:listing:test`
 
 ## Working Rules
 

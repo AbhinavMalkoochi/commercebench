@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 
+import { buildListingDraft } from "@/agent/core/listing-draft-builder";
 import { PrintfulDraftExecutor } from "@/agent/core/printful-draft-executor";
 import { planProductCreation } from "@/agent/core/product-creation-kernel";
 import {
@@ -36,6 +37,10 @@ interface AgentLoopControlPlaneConfig {
   pauseDurationMinutes: number;
 }
 
+interface AgentLoopListingConfig {
+  enabled: boolean;
+}
+
 const DEFAULT_CONTROL_PLANE_CONFIG: AgentLoopControlPlaneConfig = {
   maxConsecutiveRuntimeFailures: 3,
   pauseDurationMinutes: 30,
@@ -57,6 +62,7 @@ export class AgentLoop {
     private readonly research: ResearchLoopDependencies,
     private readonly productCreation?: AgentLoopProductCreationConfig,
     private readonly controlPlane: AgentLoopControlPlaneConfig = DEFAULT_CONTROL_PLANE_CONFIG,
+    private readonly listing: AgentLoopListingConfig = { enabled: true },
   ) {
     this.printfulDraftExecutor = new PrintfulDraftExecutor(research.trace);
   }
@@ -91,6 +97,7 @@ export class AgentLoop {
     try {
       const result = await runResearchLoop(this.research, now);
       let productCreation: AgentCycleRecord["productCreation"] | undefined;
+      let listingDraft: AgentCycleRecord["listingDraft"] | undefined;
       let completedAt = result.completedAt;
 
       if (result.status === "passed" && result.selectedCandidate && this.productCreation) {
@@ -134,6 +141,10 @@ export class AgentLoop {
           productCreation.execution = execution;
         }
 
+        if (plan.status === "draft_ready" && this.listing.enabled) {
+          listingDraft = buildListingDraft(plan.draft!, productCreation.execution);
+        }
+
         completedAt = new Date().toISOString();
       }
 
@@ -143,6 +154,7 @@ export class AgentLoop {
         completedAt,
         result,
         productCreation,
+        listingDraft,
       };
       const lastResultPath = await this.store.appendCycle(record);
 

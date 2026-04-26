@@ -84,6 +84,7 @@ async function main(): Promise<void> {
     selectedCandidate: record.result.selectedCandidate?.key,
     productCreationStatus: record.productCreation?.plan.status,
     productExecutionStatus: record.productCreation?.execution?.status,
+    listingDraftStatus: record.listingDraft?.status,
     lastResultPath: `${process.cwd()}/.agent-state/live`,
   });
 
