@@ -9,10 +9,10 @@ const signalSchema = z.object({
     z.object({
       label: z.string(),
       summary: z.string(),
-      sourceUrl: z.string().url().optional(),
-      tags: z.array(z.string()).default([]),
-      priceMin: z.number().nullable().optional(),
-      priceMax: z.number().nullable().optional(),
+      sourceUrl: z.string().nullable(),
+      tags: z.array(z.string()),
+      priceMin: z.number().nullable(),
+      priceMax: z.number().nullable(),
       freshness: z.number().min(0).max(1),
       visualDemo: z.number().min(0).max(1),
       creatorAppeal: z.number().min(0).max(1),
@@ -34,6 +34,18 @@ function normalizeTags(tags: string[], label: string): string[] {
   );
 }
 
+function normalizeSourceUrl(sourceUrl: string | null): string | undefined {
+  if (!sourceUrl) {
+    return undefined;
+  }
+
+  try {
+    return new URL(sourceUrl).toString();
+  } catch {
+    return undefined;
+  }
+}
+
 export class OpenAiSearchProvider implements SearchProvider {
   constructor(
     private readonly client: OpenAI,
@@ -48,6 +60,7 @@ export class OpenAiSearchProvider implements SearchProvider {
         "Return only products or product angles that appear current.",
         "Reject regulated or restricted categories.",
         "Prefer prices under $100.",
+        "Every signal must include tags as an array, sourceUrl as a URL or null, and priceMin/priceMax as numbers or null.",
         `Date: ${now.toISOString()}`,
         `Query: ${plan.query}`,
       ].join("\n\n"),
@@ -82,7 +95,7 @@ export class OpenAiSearchProvider implements SearchProvider {
       queryId: plan.id,
       query: plan.query,
       sourceMode: "search_backed",
-      sourceUrl: signal.sourceUrl,
+      sourceUrl: normalizeSourceUrl(signal.sourceUrl),
       label: signal.label,
       summary: signal.summary,
       tags: normalizeTags(signal.tags, signal.label),
