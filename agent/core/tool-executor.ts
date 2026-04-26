@@ -12,6 +12,10 @@ export class ToolExecutor {
     private readonly trace?: FileResearchTrace,
   ) {}
 
+  getToolDefinition<Name extends AgentToolName>(name: Name) {
+    return this.registry.getTool(name);
+  }
+
   async execute<Name extends AgentToolName>(
     name: Name,
     input: AgentToolMap[Name]["input"],

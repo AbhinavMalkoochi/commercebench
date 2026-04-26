@@ -13,6 +13,17 @@ export interface AgentToolExecutionContext {
   fetchImpl?: typeof fetch;
 }
 
+export interface AgentToolPolicyContext {
+  stage: AgentRuntimeStage;
+  approvedToolNames?: AgentToolName[];
+  allowHighRiskTools?: boolean;
+}
+
+export interface AgentToolPolicyDecision {
+  allowed: boolean;
+  reason: string;
+}
+
 export interface AgentToolDefinition<Name extends string, Input, Output> {
   name: Name;
   description: string;
@@ -73,6 +84,33 @@ export type AgentToolMap = {
 
 export type AgentToolName = keyof AgentToolMap;
 
+export type AgentToolCall = {
+  [Name in AgentToolName]: {
+    id: string;
+    toolName: Name;
+    input: AgentToolMap[Name]["input"];
+  };
+}[AgentToolName];
+
+export interface AgentTaskPlan {
+  objective: string;
+  steps: AgentToolCall[];
+}
+
+export interface AgentTaskStepResult {
+  stepId: string;
+  toolName: AgentToolName;
+  output: unknown;
+}
+
+export interface AgentTaskRunResult {
+  status: "completed" | "blocked";
+  objective: string;
+  completedSteps: AgentTaskStepResult[];
+  blockedStepId?: string;
+  blockedReason?: string;
+}
+
 export type AnyAgentToolDefinition = {
   [Name in AgentToolName]: AgentToolDefinition<Name, AgentToolMap[Name]["input"], AgentToolMap[Name]["output"]>;
 }[AgentToolName];
@@ -81,4 +119,11 @@ export interface AgentToolRegistry {
   listTools(): AnyAgentToolDefinition[];
   listToolsForStage(stage: AgentRuntimeStage): AnyAgentToolDefinition[];
   getTool<Name extends AgentToolName>(name: Name): AgentToolDefinition<Name, AgentToolMap[Name]["input"], AgentToolMap[Name]["output"]>;
+}
+
+export interface AgentToolPolicy {
+  evaluate<Name extends AgentToolName>(
+    tool: AgentToolDefinition<Name, AgentToolMap[Name]["input"], AgentToolMap[Name]["output"]>,
+    context: AgentToolPolicyContext,
+  ): AgentToolPolicyDecision;
 }
