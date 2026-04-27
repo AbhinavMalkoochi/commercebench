@@ -10,28 +10,37 @@ import { fetchWebPageTool } from "@/agent/tools/fetch-web-page";
 import { createPrintfulMockupTaskTool } from "@/agent/tools/create-printful-mockup-task";
 import { createCjOrderDraftTool } from "@/agent/tools/create-cj-order-draft";
 import { createPrintfulStoreProductTool } from "@/agent/tools/create-printful-store-product";
+import { createTikTokProductTool } from "@/agent/tools/create-tiktok-product";
+import { activateTikTokProductsTool } from "@/agent/tools/activate-tiktok-products";
+import { deactivateTikTokProductsTool } from "@/agent/tools/deactivate-tiktok-products";
 import { getCjAccessTokenTool } from "@/agent/tools/get-cj-access-token";
 import { getCjBalanceTool } from "@/agent/tools/get-cj-balance";
 import { getCjOrderDetailTool } from "@/agent/tools/get-cj-order-detail";
 import { getCjOrdersTool } from "@/agent/tools/get-cj-orders";
 import { getPrintfulMockupTaskTool } from "@/agent/tools/get-printful-mockup-task";
 import { getPrintfulProductsTool } from "@/agent/tools/get-printful-products";
+import { getTikTokWarehousesTool } from "@/agent/tools/get-tiktok-warehouses";
 import { getPrintfulVariantPricesTool } from "@/agent/tools/get-printful-variant-prices";
 import { getTikTokAccessTokenTool } from "@/agent/tools/get-tiktok-access-token";
 import { getTikTokAffiliateTool } from "@/agent/tools/get-tiktok-affiliate";
 import { getTikTokAuthorizedShopsTool } from "@/agent/tools/get-tiktok-authorized-shops";
 import { queryCjProductsTool } from "@/agent/tools/query-cj-products";
+import { recommendTikTokCategoryTool } from "@/agent/tools/recommend-tiktok-category";
 import { refreshCjAccessTokenTool } from "@/agent/tools/refresh-cj-access-token";
 import { refreshTikTokAccessTokenTool } from "@/agent/tools/refresh-tiktok-access-token";
 import { runRemoteShellCommandTool } from "@/agent/tools/run-remote-shell-command";
 import { searchTikTokOrdersTool } from "@/agent/tools/search-tiktok-orders";
 import { searchTikTokProductsTool } from "@/agent/tools/search-tiktok-products";
+import { uploadTikTokProductImageTool } from "@/agent/tools/upload-tiktok-product-image";
 
 const REGISTERED_TOOLS = [
   fetchWebPageTool,
+  activateTikTokProductsTool,
   createCjOrderDraftTool,
   createPrintfulMockupTaskTool,
   createPrintfulStoreProductTool,
+  createTikTokProductTool,
+  deactivateTikTokProductsTool,
   getCjAccessTokenTool,
   getCjBalanceTool,
   getCjOrderDetailTool,
@@ -42,12 +51,15 @@ const REGISTERED_TOOLS = [
   getTikTokAccessTokenTool,
   getTikTokAffiliateTool,
   getTikTokAuthorizedShopsTool,
+  getTikTokWarehousesTool,
   queryCjProductsTool,
+  recommendTikTokCategoryTool,
   refreshCjAccessTokenTool,
   refreshTikTokAccessTokenTool,
   runRemoteShellCommandTool,
   searchTikTokOrdersTool,
   searchTikTokProductsTool,
+  uploadTikTokProductImageTool,
 ] as const satisfies readonly AnyAgentToolDefinition[];
 
 export class StaticToolRegistry implements AgentToolRegistry {

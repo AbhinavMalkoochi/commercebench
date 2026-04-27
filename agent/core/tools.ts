@@ -131,6 +131,129 @@ export interface SearchTikTokProductsOutput {
   products: TikTokShopProductSummary[];
 }
 
+export interface TikTokWarehouseSummary {
+  id: string;
+  name?: string;
+  effectStatus?: string;
+  isDefault: boolean;
+  regionCode?: string;
+  city?: string;
+}
+
+export interface GetTikTokWarehousesInput {
+  appKey: string;
+  appSecret: string;
+  accessToken: string;
+  shopCipher: string;
+}
+
+export interface GetTikTokWarehousesOutput {
+  fetchedAt: string;
+  sourceUrl: string;
+  warehouses: TikTokWarehouseSummary[];
+}
+
+export interface RecommendTikTokCategoryInput {
+  appKey: string;
+  appSecret: string;
+  accessToken: string;
+  shopCipher: string;
+  title: string;
+  description?: string;
+  imageUrls?: string[];
+}
+
+export interface RecommendTikTokCategoryOutput {
+  fetchedAt: string;
+  sourceUrl: string;
+  categoryId: string;
+  categoryPath: string[];
+}
+
+export interface UploadTikTokProductImageInput {
+  appKey: string;
+  appSecret: string;
+  accessToken: string;
+  shopCipher: string;
+  imageUrl: string;
+  useCase?: "MAIN_IMAGE" | "ATTRIBUTE_IMAGE" | "DESCRIPTION_IMAGE" | "CERTIFICATION_IMAGE";
+}
+
+export interface UploadTikTokProductImageOutput {
+  fetchedAt: string;
+  sourceUrl: string;
+  uri: string;
+  url: string;
+  width: number;
+  height: number;
+  useCase: "MAIN_IMAGE" | "ATTRIBUTE_IMAGE" | "DESCRIPTION_IMAGE" | "CERTIFICATION_IMAGE";
+}
+
+export interface CreateTikTokProductSkuInput {
+  sellerSku: string;
+  priceAmount: string;
+  currency: string;
+  warehouseId: string;
+  quantity: number;
+  listPriceAmount?: string;
+}
+
+export interface CreateTikTokProductInput {
+  appKey: string;
+  appSecret: string;
+  accessToken: string;
+  shopCipher: string;
+  title: string;
+  description: string;
+  categoryId: string;
+  mainImageUris: string[];
+  skus: CreateTikTokProductSkuInput[];
+  packageWeightValue: string;
+  packageWeightUnit: string;
+  packageLength?: string;
+  packageWidth?: string;
+  packageHeight?: string;
+  packageDimensionUnit?: string;
+  saveMode?: "LISTING" | "DRAFT";
+  externalProductId?: string;
+}
+
+export interface CreateTikTokProductOutput {
+  fetchedAt: string;
+  sourceUrl: string;
+  productId: string;
+  skuIds: string[];
+  warnings: string[];
+}
+
+export interface ActivateTikTokProductsInput {
+  appKey: string;
+  appSecret: string;
+  accessToken: string;
+  shopCipher: string;
+  productIds: string[];
+}
+
+export interface ActivateTikTokProductsOutput {
+  fetchedAt: string;
+  sourceUrl: string;
+  productIds: string[];
+}
+
+export interface DeactivateTikTokProductsInput {
+  appKey: string;
+  appSecret: string;
+  accessToken: string;
+  shopCipher: string;
+  productIds: string[];
+}
+
+export interface DeactivateTikTokProductsOutput {
+  fetchedAt: string;
+  sourceUrl: string;
+  productIds: string[];
+}
+
 export interface RunRemoteShellCommandInput {
   command: string;
   workingDirectory?: string;
@@ -325,6 +448,7 @@ export interface CjProductSummary {
   name: string;
   sku?: string;
   price?: number;
+  imageUrl?: string;
 }
 
 export interface QueryCjProductsInput {
@@ -585,6 +709,30 @@ export type AgentToolMap = {
   search_tiktok_products: {
     input: SearchTikTokProductsInput;
     output: SearchTikTokProductsOutput;
+  };
+  get_tiktok_warehouses: {
+    input: GetTikTokWarehousesInput;
+    output: GetTikTokWarehousesOutput;
+  };
+  recommend_tiktok_category: {
+    input: RecommendTikTokCategoryInput;
+    output: RecommendTikTokCategoryOutput;
+  };
+  upload_tiktok_product_image: {
+    input: UploadTikTokProductImageInput;
+    output: UploadTikTokProductImageOutput;
+  };
+  create_tiktok_product: {
+    input: CreateTikTokProductInput;
+    output: CreateTikTokProductOutput;
+  };
+  activate_tiktok_products: {
+    input: ActivateTikTokProductsInput;
+    output: ActivateTikTokProductsOutput;
+  };
+  deactivate_tiktok_products: {
+    input: DeactivateTikTokProductsInput;
+    output: DeactivateTikTokProductsOutput;
   };
   run_remote_shell_command: {
     input: RunRemoteShellCommandInput;

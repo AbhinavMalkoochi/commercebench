@@ -63,6 +63,7 @@ export class CjDraftInspector {
         name: selected.name,
         sku: selected.sku,
         price: selected.price,
+        imageUrl: selected.imageUrl,
         sourceUrl: queryResult.sourceUrl,
       },
     };

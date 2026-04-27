@@ -9,11 +9,15 @@ import {
 const DEFAULT_CJ_PRODUCTS_QUERY_URL = "https://developers.cjdropshipping.com/api2.0/v1/product/query";
 
 function parseCjProduct(product: Record<string, unknown>): CjProductSummary {
+  const imageCandidates = [product.image, product.productImage, product.bigImage, product.mainImage, product.imageUrl];
+  const imageUrl = imageCandidates.find((value): value is string => typeof value === "string" && value.length > 0);
+
   return {
     productId: typeof product.product_id === "string" ? product.product_id : String(product.pid ?? ""),
     name: typeof product.name === "string" ? product.name : "Unknown CJ product",
     sku: typeof product.sku === "string" ? product.sku : undefined,
     price: typeof product.price === "number" ? product.price : undefined,
+    imageUrl,
   };
 }
 

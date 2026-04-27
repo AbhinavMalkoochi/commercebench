@@ -4,6 +4,7 @@ import { CjDraftExecutor } from "@/agent/core/cj-draft-executor";
 import { buildListingDraft } from "@/agent/core/listing-draft-builder";
 import { OrderSync, OrderSyncConfig } from "@/agent/core/order-sync";
 import { PrintfulDraftExecutor } from "@/agent/core/printful-draft-executor";
+import { TikTokListingPublishConfig, TikTokListingPublisher } from "@/agent/core/tiktok-listing-publisher";
 import { planProductCreation } from "@/agent/core/product-creation-kernel";
 import {
   AgentCycleRecord,
@@ -39,6 +40,7 @@ interface AgentLoopProductCreationConfig {
     fetchImpl?: typeof fetch;
   };
   orderSync?: OrderSyncConfig;
+  tikTokListing?: TikTokListingPublishConfig;
 }
 
 interface AgentLoopControlPlaneConfig {
@@ -67,6 +69,7 @@ export class AgentLoop {
   private readonly cjDraftExecutor: CjDraftExecutor;
   private readonly printfulDraftExecutor: PrintfulDraftExecutor;
   private readonly orderSync: OrderSync;
+  private readonly tikTokListingPublisher: TikTokListingPublisher;
 
   constructor(
     private readonly store: AgentStateStore,
@@ -78,6 +81,7 @@ export class AgentLoop {
     this.cjDraftExecutor = new CjDraftExecutor(research.trace);
     this.printfulDraftExecutor = new PrintfulDraftExecutor(research.trace);
     this.orderSync = new OrderSync();
+    this.tikTokListingPublisher = new TikTokListingPublisher();
   }
 
   async runOnce(now = new Date()): Promise<AgentCycleRecord> {
@@ -111,6 +115,7 @@ export class AgentLoop {
       const result = await runResearchLoop(this.research, now);
       let productCreation: AgentCycleRecord["productCreation"] | undefined;
       let listingDraft: AgentCycleRecord["listingDraft"] | undefined;
+      let listingExecution: AgentCycleRecord["listingExecution"] | undefined;
       let orderSync: AgentCycleRecord["orderSync"] | undefined;
       let completedAt = result.completedAt;
 
@@ -176,6 +181,18 @@ export class AgentLoop {
           listingDraft = buildListingDraft(plan.draft!, productCreation.execution);
         }
 
+        if (this.productCreation.tikTokListing) {
+          listingExecution = await this.tikTokListingPublisher.publish({
+            draft: listingDraft,
+            productExecution: productCreation.execution,
+            config: this.productCreation.tikTokListing,
+            toolContext: {
+              now,
+              fetchImpl: this.productCreation.cjExecution?.fetchImpl,
+            },
+          });
+        }
+
         completedAt = new Date().toISOString();
       }
 
@@ -197,6 +214,7 @@ export class AgentLoop {
         result,
         productCreation,
         listingDraft,
+        listingExecution,
         orderSync,
       };
       const lastResultPath = await this.store.appendCycle(record);

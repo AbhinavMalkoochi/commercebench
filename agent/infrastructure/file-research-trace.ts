@@ -2,6 +2,12 @@ import { randomUUID } from "node:crypto";
 import { appendFile, mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
+type TraceEventListener = (entry: {
+  timestamp: string;
+  type: string;
+  payload: Record<string, unknown>;
+}) => void | Promise<void>;
+
 function sanitizeSegment(value: string): string {
   return value.replace(/[^a-z0-9._-]+/gi, "-").replace(/^-+|-+$/g, "").slice(0, 120) || "item";
 }
@@ -10,11 +16,13 @@ export class FileResearchTrace {
   readonly traceId: string;
   readonly traceDirectory: string;
   private readonly eventsPath: string;
+  private readonly eventListener?: TraceEventListener;
 
-  constructor(baseDirectory: string, now = new Date()) {
+  constructor(baseDirectory: string, now = new Date(), eventListener?: TraceEventListener) {
     this.traceId = `${now.toISOString().replace(/[:.]/g, "-")}-${randomUUID()}`;
     this.traceDirectory = path.join(baseDirectory, this.traceId);
     this.eventsPath = path.join(this.traceDirectory, "events.ndjson");
+    this.eventListener = eventListener;
   }
 
   async initialize(metadata: Record<string, unknown>): Promise<void> {
@@ -25,10 +33,13 @@ export class FileResearchTrace {
 
   async recordEvent(type: string, payload: Record<string, unknown>): Promise<void> {
     await mkdir(this.traceDirectory, { recursive: true });
+    const entry = { timestamp: new Date().toISOString(), type, payload };
     await appendFile(
       this.eventsPath,
-      `${JSON.stringify({ timestamp: new Date().toISOString(), type, payload })}\n`,
+      `${JSON.stringify(entry)}\n`,
     );
+
+    await this.eventListener?.(entry);
   }
 
   async writeJson(relativePath: string, value: unknown): Promise<void> {

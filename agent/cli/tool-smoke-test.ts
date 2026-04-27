@@ -276,6 +276,64 @@ const TIKTOK_SEARCH_ORDERS_FIXTURE = {
   },
 };
 
+const TIKTOK_WAREHOUSES_FIXTURE = {
+  code: 0,
+  message: "success",
+  data: {
+    warehouses: [
+      {
+        id: "wh-1",
+        is_default: true,
+        name: "Main Warehouse",
+        effect_status: "ENABLED",
+        address: {
+          region_code: "US",
+          city: "Los Angeles",
+        },
+      },
+    ],
+  },
+};
+
+const TIKTOK_CATEGORY_RECOMMEND_FIXTURE = {
+  code: 0,
+  message: "success",
+  data: {
+    leaf_category_id: "cat-1",
+    categories: [
+      { id: "beauty", name: "Beauty", level: 1, is_leaf: false, permission_statuses: [] },
+      { id: "cat-1", name: "Hair Styling Tools", level: 2, is_leaf: true, permission_statuses: [] },
+    ],
+  },
+};
+
+const TIKTOK_UPLOAD_IMAGE_FIXTURE = {
+  code: 0,
+  message: "success",
+  data: {
+    uri: "img-uri-1",
+    url: "https://cdn.example.com/img.jpg",
+    width: 1200,
+    height: 1200,
+    use_case: "MAIN_IMAGE",
+  },
+};
+
+const TIKTOK_CREATE_PRODUCT_FIXTURE = {
+  code: 0,
+  message: "success",
+  data: {
+    product_id: "tts-prod-created-1",
+    skus: [
+      {
+        id: "tts-sku-created-1",
+        seller_sku: "CJ-HAIR-001",
+      },
+    ],
+    warnings: [],
+  },
+};
+
 const CJ_PRODUCTS_FIXTURE = {
   products: [
     {
@@ -333,6 +391,10 @@ async function main(): Promise<void> {
 
   const productCreationFetch: typeof fetch = async (input) => {
     const url = typeof input === "string" ? input : input.toString();
+
+    if (url === "https://example.com/product.jpg") {
+      return new Response("image-bytes", { status: 200 });
+    }
 
     if (url.includes("/authentication/getAccessToken")) {
       return new Response(JSON.stringify(CJ_GET_ACCESS_TOKEN_FIXTURE), {
@@ -401,6 +463,51 @@ async function main(): Promise<void> {
 
     if (url.includes("/authorization/202309/shops")) {
       return new Response(JSON.stringify(TIKTOK_AUTHORIZED_SHOPS_FIXTURE), {
+        status: 200,
+        headers: {
+          "content-type": "application/json",
+        },
+      });
+    }
+
+    if (url.includes("/logistics/202309/warehouses")) {
+      return new Response(JSON.stringify(TIKTOK_WAREHOUSES_FIXTURE), {
+        status: 200,
+        headers: {
+          "content-type": "application/json",
+        },
+      });
+    }
+
+    if (url.includes("/product/202309/categories/recommend")) {
+      return new Response(JSON.stringify(TIKTOK_CATEGORY_RECOMMEND_FIXTURE), {
+        status: 200,
+        headers: {
+          "content-type": "application/json",
+        },
+      });
+    }
+
+    if (url.includes("/product/202309/images/upload")) {
+      return new Response(JSON.stringify(TIKTOK_UPLOAD_IMAGE_FIXTURE), {
+        status: 200,
+        headers: {
+          "content-type": "application/json",
+        },
+      });
+    }
+
+    if (url.includes("/product/202309/products/activate") || url.includes("/product/202309/products/deactivate")) {
+      return new Response(JSON.stringify({ code: 0, message: "success", data: {} }), {
+        status: 200,
+        headers: {
+          "content-type": "application/json",
+        },
+      });
+    }
+
+    if (url.includes("/product/202309/products")) {
+      return new Response(JSON.stringify(TIKTOK_CREATE_PRODUCT_FIXTURE), {
         status: 200,
         headers: {
           "content-type": "application/json",
@@ -747,6 +854,115 @@ async function main(): Promise<void> {
     },
   );
 
+  const tiktokWarehouses = await executor.execute(
+    "get_tiktok_warehouses",
+    {
+      appKey: "tt-app-key",
+      appSecret: "tt-app-secret",
+      accessToken: "tts-access-token",
+      shopCipher: "cipher-123",
+    },
+    {
+      now: new Date("2026-04-26T00:00:00.000Z"),
+      fetchImpl: productCreationFetch,
+    },
+  );
+
+  const tiktokCategory = await executor.execute(
+    "recommend_tiktok_category",
+    {
+      appKey: "tt-app-key",
+      appSecret: "tt-app-secret",
+      accessToken: "tts-access-token",
+      shopCipher: "cipher-123",
+      title: "Heatless Hair Curler Set",
+      description: "TikTok beauty product",
+      imageUrls: ["https://example.com/product.jpg"],
+    },
+    {
+      now: new Date("2026-04-26T00:00:00.000Z"),
+      fetchImpl: productCreationFetch,
+    },
+  );
+
+  const tiktokUploadImage = await executor.execute(
+    "upload_tiktok_product_image",
+    {
+      appKey: "tt-app-key",
+      appSecret: "tt-app-secret",
+      accessToken: "tts-access-token",
+      shopCipher: "cipher-123",
+      imageUrl: "https://example.com/product.jpg",
+    },
+    {
+      now: new Date("2026-04-26T00:00:00.000Z"),
+      fetchImpl: productCreationFetch,
+    },
+  );
+
+  const tiktokCreateProduct = await executor.execute(
+    "create_tiktok_product",
+    {
+      appKey: "tt-app-key",
+      appSecret: "tt-app-secret",
+      accessToken: "tts-access-token",
+      shopCipher: "cipher-123",
+      title: "Heatless Hair Curler Set",
+      description: "TikTok beauty product",
+      categoryId: "cat-1",
+      mainImageUris: ["img-uri-1"],
+      skus: [
+        {
+          sellerSku: "CJ-HAIR-001",
+          priceAmount: "19.99",
+          currency: "USD",
+          warehouseId: "wh-1",
+          quantity: 25,
+        },
+      ],
+      packageWeightValue: "0.3",
+      packageWeightUnit: "KILOGRAM",
+      packageLength: "20",
+      packageWidth: "15",
+      packageHeight: "5",
+      packageDimensionUnit: "CENTIMETER",
+    },
+    {
+      now: new Date("2026-04-26T00:00:00.000Z"),
+      fetchImpl: productCreationFetch,
+    },
+  );
+
+  const activatedProducts = await executor.execute(
+    "activate_tiktok_products",
+    {
+      appKey: "tt-app-key",
+      appSecret: "tt-app-secret",
+      accessToken: "tts-access-token",
+      shopCipher: "cipher-123",
+      productIds: ["tts-prod-created-1"],
+    },
+    {
+      now: new Date("2026-04-26T00:00:00.000Z"),
+      fetchImpl: productCreationFetch,
+    },
+  );
+
+  const deactivatedProducts = await executor.execute(
+    "deactivate_tiktok_products",
+    {
+      appKey: "tt-app-key",
+      appSecret: "tt-app-secret",
+      accessToken: "tts-access-token",
+      shopCipher: "cipher-123",
+      productIds: ["tts-prod-created-1"],
+    },
+    {
+      now: new Date("2026-04-26T00:00:00.000Z"),
+      fetchImpl: productCreationFetch,
+    },
+  );
+
   const previousRemoteShellMode = process.env.AGENT_REMOTE_SHELL_MODE;
   try {
     process.env.AGENT_REMOTE_SHELL_MODE = "local";
@@ -767,11 +983,12 @@ async function main(): Promise<void> {
     }
   }
 
-  assert.equal(registry.listTools().length, 20);
+  assert.equal(registry.listTools().length, 26);
   assert.equal(registry.listToolsForStage("research").length, 1);
   assert.equal(registry.listToolsForStage("product_creation").length, 10);
-  assert.equal(registry.listToolsForStage("listing").length, 4);
+  assert.equal(registry.listToolsForStage("listing").length, 9);
   assert.equal(registry.listToolsForStage("monitoring").length, 4);
+  assert.equal(registry.listToolsForStage("pivoting").length, 1);
   assert.equal(fetchResult.title, "Research Fixture");
   assert.equal(fetchResult.text.includes("Current page text"), true);
   assert.equal(printfulProducts.products[0]?.name, "Unisex Staple T-Shirt");
@@ -791,6 +1008,12 @@ async function main(): Promise<void> {
   assert.equal(tiktokProducts.products[0]?.title, "Hydrocolloid Pimple Patches");
   assert.equal(tiktokOrders.orders[0]?.id, "tts-order-1");
   assert.equal(tiktokOrders.orders[0]?.status, "AWAITING_SHIPMENT");
+  assert.equal(tiktokWarehouses.warehouses[0]?.id, "wh-1");
+  assert.equal(tiktokCategory.categoryId, "cat-1");
+  assert.equal(tiktokUploadImage.uri, "img-uri-1");
+  assert.equal(tiktokCreateProduct.productId, "tts-prod-created-1");
+  assert.equal(activatedProducts.productIds[0], "tts-prod-created-1");
+  assert.equal(deactivatedProducts.productIds[0], "tts-prod-created-1");
   assert.equal(mockupTaskResult.assets[0]?.mockupUrl, "https://example.com/mockup.png");
   assert.equal(storeProduct.productId, 7001);
   assert.equal(cjProducts.products[0]?.productId, "cj-123");

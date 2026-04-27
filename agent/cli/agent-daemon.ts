@@ -8,9 +8,12 @@ import { CompositeSearchProvider } from "@/agent/infrastructure/composite-search
 import { ExaSearchProvider } from "@/agent/infrastructure/exa-search-provider";
 import { FileResearchTrace } from "@/agent/infrastructure/file-research-trace";
 import { FileStateStore } from "@/agent/infrastructure/file-state-store";
+import { loadRuntimeEnv } from "@/agent/infrastructure/load-runtime-env";
 import { OpenAiSearchProvider } from "@/agent/infrastructure/openai-search-provider";
 
 async function createLoop(now: Date) {
+  loadRuntimeEnv();
+
   const apiKey = process.env.OPENAI_API_KEY;
 
   if (!apiKey) {
@@ -75,6 +78,24 @@ async function createLoop(now: Date) {
               },
             }
           : undefined,
+        tikTokListing: process.env.TIKTOK_LISTING_ACCESS_TOKEN && process.env.TIKTOK_APP_KEY && process.env.TIKTOK_APP_SECRET && process.env.TIKTOK_SHOP_CIPHER
+          ? {
+              appKey: process.env.TIKTOK_APP_KEY,
+              appSecret: process.env.TIKTOK_APP_SECRET,
+              accessToken: process.env.TIKTOK_LISTING_ACCESS_TOKEN,
+              shopCipher: process.env.TIKTOK_SHOP_CIPHER,
+              currency: process.env.TIKTOK_LISTING_CURRENCY ?? "USD",
+              defaultInventoryQuantity: Math.max(Number(process.env.TIKTOK_LISTING_DEFAULT_INVENTORY ?? "25"), 1),
+              defaultWarehouseId: process.env.TIKTOK_LISTING_WAREHOUSE_ID,
+              packageWeightValue: process.env.TIKTOK_LISTING_WEIGHT_VALUE ?? "0.3",
+              packageWeightUnit: process.env.TIKTOK_LISTING_WEIGHT_UNIT ?? "KILOGRAM",
+              packageLength: process.env.TIKTOK_LISTING_PACKAGE_LENGTH ?? "20",
+              packageWidth: process.env.TIKTOK_LISTING_PACKAGE_WIDTH ?? "15",
+              packageHeight: process.env.TIKTOK_LISTING_PACKAGE_HEIGHT ?? "5",
+              packageDimensionUnit: process.env.TIKTOK_LISTING_PACKAGE_UNIT ?? "CENTIMETER",
+              activateAfterCreate: process.env.TIKTOK_LISTING_ACTIVATE !== "0",
+            }
+          : undefined,
       },
     ),
     trace,
@@ -95,6 +116,7 @@ async function runDaemon(): Promise<void> {
         selectedCandidate: record.result.selectedCandidate?.key,
         productCreationStatus: record.productCreation?.plan.status,
         listingDraftStatus: record.listingDraft?.status,
+        listingExecutionStatus: record.listingExecution?.status,
         orderSyncStatus: record.orderSync?.status,
       });
       console.log(`[agent-daemon] completed cycle ${record.cycleId} with status ${record.result.status}`);

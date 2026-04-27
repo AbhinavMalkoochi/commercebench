@@ -71,6 +71,10 @@ export default async function Home() {
                 <strong>{latestCycle.listingDraft?.status ?? "Unavailable"}</strong>
               </div>
               <div className="summary-block">
+                <span className="summary-label">Listing publish</span>
+                <strong>{latestCycle.listingExecution?.status ?? "Unavailable"}</strong>
+              </div>
+              <div className="summary-block">
                 <span className="summary-label">Order sync</span>
                 <strong>{latestCycle.orderSync?.status ?? "Unavailable"}</strong>
               </div>
@@ -82,6 +86,12 @@ export default async function Home() {
                 <div className="summary-block full-width">
                   <span className="summary-label">Order sync reasoning</span>
                   <p>{latestCycle.orderSync.reasoning}</p>
+                </div>
+              ) : null}
+              {latestCycle.listingExecution ? (
+                <div className="summary-block full-width">
+                  <span className="summary-label">Listing publish reasoning</span>
+                  <p>{latestCycle.listingExecution.reasoning}</p>
                 </div>
               ) : null}
             </div>
@@ -106,6 +116,7 @@ export default async function Home() {
             <li><span>TikTok app secret</span><strong>{formatBool(data.environment.tikTokAppSecret)}</strong></li>
             <li><span>TikTok shop cipher</span><strong>{formatBool(data.environment.tikTokShopCipher)}</strong></li>
             <li><span>TikTok order sync token</span><strong>{formatBool(data.environment.tikTokOrderSync)}</strong></li>
+            <li><span>TikTok listing token</span><strong>{formatBool(data.environment.tikTokListing)}</strong></li>
             <li><span>Remote shell mode</span><strong>{data.environment.remoteShellMode}</strong></li>
             <li><span>Remote shell host</span><strong>{data.environment.remoteShellHost ?? "Unset"}</strong></li>
           </ul>
@@ -159,8 +170,10 @@ export default async function Home() {
                     <span className="pill">{cycle.result.status}</span>
                     <span className="pill">{cycle.productCreation?.plan.draft?.fulfillmentProvider ?? "no-provider"}</span>
                     <span className="pill">listing {cycle.listingDraft?.status ?? "none"}</span>
+                    <span className="pill">publish {cycle.listingExecution?.status ?? "none"}</span>
                     <span className="pill">orders {cycle.orderSync?.status ?? "none"}</span>
                   </div>
+                  {cycle.listingExecution ? <p>{cycle.listingExecution.reasoning}</p> : null}
                   {cycle.orderSync ? <p>{cycle.orderSync.reasoning}</p> : null}
                 </div>
               </article>
@@ -251,6 +264,34 @@ export default async function Home() {
                 </div>
               </article>
             )) : <p className="empty-state">No reconciled CJ orders yet.</p>}
+          </div>
+        </article>
+
+        <article className="panel panel-wide">
+          <div className="panel-header">
+            <div>
+              <p className="eyebrow">Listing Publish</p>
+              <h2>TikTok listing outcomes</h2>
+            </div>
+          </div>
+          <div className="timeline">
+            {data.cycles.flatMap((cycle) => cycle.listingExecution ? [{ cycleId: cycle.cycleId, listingExecution: cycle.listingExecution }] : []).length > 0 ? data.cycles.flatMap((cycle) => cycle.listingExecution ? [{ cycleId: cycle.cycleId, listingExecution: cycle.listingExecution }] : []).map((entry) => (
+              <article className="timeline-item" key={entry.cycleId}>
+                <div className="timeline-marker" />
+                <div className="timeline-content">
+                  <div className="timeline-topline">
+                    <strong>{entry.listingExecution.productId ?? entry.cycleId}</strong>
+                    <span>{entry.listingExecution.status}</span>
+                  </div>
+                  <p>{entry.listingExecution.reasoning}</p>
+                  <div className="pill-row">
+                    <span className="pill">category {entry.listingExecution.categoryId ?? "n/a"}</span>
+                    <span className="pill">warehouse {entry.listingExecution.warehouseId ?? "n/a"}</span>
+                    <span className="pill">sku count {entry.listingExecution.skuIds?.length ?? 0}</span>
+                  </div>
+                </div>
+              </article>
+            )) : <p className="empty-state">No TikTok listing executions recorded yet.</p>}
           </div>
         </article>
       </section>

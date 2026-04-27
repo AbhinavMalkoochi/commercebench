@@ -24,6 +24,7 @@
     "agent:cj:inspect:test": "tsx agent/cli/cj-draft-inspector-smoke-test.ts",
     "agent:cj:execute:test": "tsx agent/cli/cj-draft-executor-smoke-test.ts",
     "agent:listing:test": "tsx agent/cli/listing-draft-smoke-test.ts",
+    "agent:tiktok:listing:test": "tsx agent/cli/tiktok-listing-publish-smoke-test.ts",
     "agent:product:plan-live": "tsx agent/cli/plan-product-from-live-cycle.ts"
   },
   "dependencies": {

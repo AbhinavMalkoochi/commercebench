@@ -149,6 +149,7 @@ export interface AgentCycleRecord {
     execution?: ProductExecutionResult;
   };
   listingDraft?: ListingDraftResult;
+  listingExecution?: TikTokListingExecutionResult;
   orderSync?: OrderSyncResult;
 }
 
@@ -328,6 +329,7 @@ export interface CjDraftInspectionSelection {
   name: string;
   sku?: string;
   price?: number;
+  imageUrl?: string;
   sourceUrl: string;
 }
 
@@ -350,6 +352,17 @@ export interface CjDraftExecutionResult {
 }
 
 export type ProductExecutionResult = PrintfulDraftExecutionResult | CjDraftExecutionResult;
+
+export interface TikTokListingExecutionResult {
+  status: "ready" | "skipped" | "blocked";
+  reasoning: string;
+  productId?: string;
+  skuIds?: string[];
+  categoryId?: string;
+  warehouseId?: string;
+  imageUris?: string[];
+  warnings?: string[];
+}
 
 export interface ObservedTikTokOrder {
   source: "webhook" | "search";

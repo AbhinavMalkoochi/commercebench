@@ -89,6 +89,7 @@ function summarizeEnvironment() {
     tikTokAppSecret: Boolean(process.env.TIKTOK_APP_SECRET),
     tikTokShopCipher: Boolean(process.env.TIKTOK_SHOP_CIPHER),
     tikTokOrderSync: Boolean(process.env.TIKTOK_ORDER_SYNC_ACCESS_TOKEN),
+    tikTokListing: Boolean(process.env.TIKTOK_LISTING_ACCESS_TOKEN),
     remoteShellMode: process.env.AGENT_REMOTE_SHELL_MODE ?? "ssh",
     remoteShellHost: process.env.AGENT_REMOTE_SHELL_HOST ?? null,
     remoteShellUser: process.env.AGENT_REMOTE_SHELL_USER ?? null,

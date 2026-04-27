@@ -67,6 +67,7 @@ export function buildListingDraft(
         "tiktok-shop",
         ...draft.notes.map((note) => note.split(":")[0]?.toLowerCase().replace(/[^a-z0-9]+/g, "-") ?? "note"),
       ].slice(0, 6),
+      heroImageUrl: cjExecution.selection.imageUrl,
       productHandle: toHandle(`${draft.candidateKey}-${cjExecution.selection.productId}`),
       retailPrice: draft.pricing.targetRetailPrice,
       compareAtPrice: draft.pricing.compareAtPrice,
