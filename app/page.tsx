@@ -294,6 +294,34 @@ export default async function Home() {
             )) : <p className="empty-state">No TikTok listing executions recorded yet.</p>}
           </div>
         </article>
+
+        <article className="panel panel-wide">
+          <div className="panel-header">
+            <div>
+              <p className="eyebrow">Product Mapping</p>
+              <h2>Candidate to fulfillment mapping</h2>
+            </div>
+          </div>
+          <div className="timeline">
+            {data.productMappings.length > 0 ? data.productMappings.slice(0, 8).map((mapping) => (
+              <article className="timeline-item" key={mapping.mappingKey}>
+                <div className="timeline-marker" />
+                <div className="timeline-content">
+                  <div className="timeline-topline">
+                    <strong>{mapping.candidateLabel}</strong>
+                    <span>{mapping.latestListingExecutionStatus ?? mapping.latestListingDraftStatus ?? "mapped"}</span>
+                  </div>
+                  <p>{mapping.listingHandle ?? mapping.mappingKey}</p>
+                  <div className="pill-row">
+                    <span className="pill">CJ {mapping.cjProductId ?? "n/a"}</span>
+                    <span className="pill">SKU {mapping.cjSku ?? "n/a"}</span>
+                    <span className="pill">TikTok {mapping.tikTokProductId ?? "draft-only"}</span>
+                  </div>
+                </div>
+              </article>
+            )) : <p className="empty-state">No persistent product mappings recorded yet.</p>}
+          </div>
+        </article>
       </section>
     </main>
   );

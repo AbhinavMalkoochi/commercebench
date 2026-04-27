@@ -129,6 +129,23 @@ export class FixtureSearchProvider implements SearchProvider {
       case "tiktok_creative_center":
         return [
           fixtureSignal(plan, 1, {
+            label: "T-shirts",
+            summary: "Broad apparel category from TikTok merchandising surfaces that should be ignored in favor of concrete products.",
+            tags: ["apparel", "fashion", "category"],
+            sourceTitle: "TikTok Creative Center Top Products",
+            freshnessNote: "Current TikTok commerce surface for April 2026.",
+            freshness: 0.9,
+            visualDemo: 0.8,
+            creatorAppeal: 0.7,
+            purchaseIntent: 0.7,
+            priceFit: 0.9,
+            saturationResistance: 0.35,
+            seasonality: 0.75,
+            confidence: 0.75,
+            priceMax: 20,
+            sourceUrl: "https://ads.tiktok.com/business/creativecenter/top-products/pc/en",
+          }),
+          fixtureSignal(plan, 2, {
             label: "Hydrocolloid Pimple Patches",
             summary: "Creators are posting fast before-and-after skincare clips and makeup-bag routines around pimple patches.",
             tags: ["skincare", "beauty", "routine", "travel"],
@@ -145,7 +162,7 @@ export class FixtureSearchProvider implements SearchProvider {
             priceMax: 18,
             sourceUrl: "https://ads.tiktok.com/business/creativecenter/top-products/pc/en",
           }),
-          fixtureSignal(plan, 2, {
+          fixtureSignal(plan, 3, {
             label: "Reusable Water Bottles",
             summary: "Hydration content still performs, but the category is crowded unless the product has a niche angle or bundle.",
             tags: ["hydration", "wellness", "travel", "gym"],

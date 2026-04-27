@@ -33,10 +33,13 @@ Run the agent 24/7 on a backend server so it can:
 - [x] Configurable live-source timeout for slower search-backed sources
 - [x] Live CLI progress logging so long research runs no longer look stuck
 - [x] Operator guide for production setup, credentials, and deployment handoff
+- [x] Persistent product mapping store between research candidate, TikTok product, and CJ SKU
+- [x] Dashboard visibility for persistent product mappings
 
 ## In Progress
 
 - [ ] Research signal normalization so real overlaps clear the two-source gate more often in live runs
+- [ ] Live research consistency hardening after the latest real run passed with `portable-blender`
 - [ ] Live TikTok publish validation against real seller credentials
 - [ ] Hosted daemon deployment with production secrets and 24/7 supervision
 
@@ -51,7 +54,6 @@ Run the agent 24/7 on a backend server so it can:
 - [ ] CJ logistics and webhook ingestion for shipment-status updates
 - [ ] TikTok listing edits for pricing / title / image iteration
 - [ ] Promotion and offer tooling when the selling account is ready
-- [ ] Persistent product mapping store between research candidate, TikTok product, and CJ SKU
 
 ## Manual Setup Still Required
 
@@ -70,7 +72,7 @@ Operator handoff: see `setup.md` for the deployment and credential checklist.
 The system should only be treated as end-to-end autopilot-ready once these are true:
 
 - [x] live research runner reads project `.env` and executes with real OpenAI credentials
-- [ ] live research consistently clears the two-source gate on real data without timing out
+- [~] live research can clear the two-source gate on real data without timing out
 - [ ] live TikTok listing publish succeeds from the runtime
 - [ ] a real TikTok order produces an unpaid CJ draft automatically
 - [ ] CJ fulfillment and tracking can be reconciled back into runtime state

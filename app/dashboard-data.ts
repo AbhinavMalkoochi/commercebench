@@ -3,6 +3,7 @@ import path from "node:path";
 
 import { readRecentTikTokWebhooks } from "@/app/tiktok-webhook-store";
 import { AgentCycleRecord, StoredAgentState } from "@/agent/core/types";
+import { FileStateStore } from "@/agent/infrastructure/file-state-store";
 
 const LIVE_STATE_ROOT = path.join(process.cwd(), ".agent-state", "live");
 
@@ -99,11 +100,13 @@ function summarizeEnvironment() {
 }
 
 export async function getDashboardData() {
-  const [state, cycles, traces, webhooks] = await Promise.all([
+  const store = new FileStateStore(LIVE_STATE_ROOT);
+  const [state, cycles, traces, webhooks, productMappings] = await Promise.all([
     readJsonFile<StoredAgentState>(path.join(LIVE_STATE_ROOT, "state.json")),
     readRecentCycleRecords(6),
     readRecentTraces(4),
     readRecentTikTokWebhooks(8),
+    store.readProductMappings(),
   ]);
 
   return {
@@ -115,6 +118,7 @@ export async function getDashboardData() {
     cycles,
     traces,
     webhooks,
+    productMappings,
     environment: summarizeEnvironment(),
     hosting: {
       dashboardCommand: "npm run dev",

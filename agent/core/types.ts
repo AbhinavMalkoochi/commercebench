@@ -153,6 +153,22 @@ export interface AgentCycleRecord {
   orderSync?: OrderSyncResult;
 }
 
+export interface ProductMappingRecord {
+  mappingKey: string;
+  cycleId: string;
+  updatedAt: string;
+  candidateKey: string;
+  candidateLabel: string;
+  fulfillmentProvider?: FulfillmentProvider;
+  listingHandle?: string;
+  cjProductId?: string;
+  cjSku?: string;
+  tikTokProductId?: string;
+  tikTokSkuIds: string[];
+  latestListingDraftStatus?: ListingDraftResult["status"];
+  latestListingExecutionStatus?: TikTokListingExecutionResult["status"];
+}
+
 export interface StoredAgentState {
   currentState: AgentState;
   cycleCount: number;
@@ -191,6 +207,7 @@ export interface AgentStateStore {
   readState(): Promise<StoredAgentState>;
   writeState(state: StoredAgentState): Promise<void>;
   appendCycle(record: AgentCycleRecord): Promise<string>;
+  readProductMappings(): Promise<ProductMappingRecord[]>;
 }
 
 export type FulfillmentProvider = "printful" | "cj_dropshipping";

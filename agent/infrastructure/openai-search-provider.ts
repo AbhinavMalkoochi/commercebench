@@ -1,12 +1,14 @@
 import path from "node:path";
 import OpenAI from "openai";
+import { z } from "zod";
 
-import { QueryPlan, ResearchSignal, SearchProvider } from "@/agent/core/types";
+import { QueryPlan, ResearchSignal, SearchProvider, SourceId } from "@/agent/core/types";
 import { FileResearchTrace } from "@/agent/infrastructure/file-research-trace";
 import {
   buildSearchInstructions,
   buildSearchResponseFormat,
   mapParsedSignals,
+  signalSchema,
 } from "@/agent/infrastructure/search-signal-codec";
 
 export class OpenAiSearchProvider implements SearchProvider {
@@ -16,8 +18,20 @@ export class OpenAiSearchProvider implements SearchProvider {
     private readonly trace?: FileResearchTrace,
   ) {}
 
+  private getSearchContextSize(sourceId: SourceId): "low" | "medium" {
+    switch (sourceId) {
+      case "tiktok_shop_search":
+      case "cj_tiktok_products":
+      case "cj_winning_products":
+        return "low";
+      default:
+        return "medium";
+    }
+  }
+
   async searchSignals(plan: QueryPlan, now: Date): Promise<ResearchSignal[]> {
     const prompt = buildSearchInstructions(plan, now);
+    const searchContextSize = this.getSearchContextSize(plan.sourceId);
 
     if (this.trace) {
       const baseName = this.trace.queryBaseName(plan.id);
@@ -30,6 +44,7 @@ export class OpenAiSearchProvider implements SearchProvider {
           allowedDomains: plan.allowedDomains,
           model: this.model,
           provider: "openai_web_search",
+          searchContextSize,
         }),
         this.trace.recordEvent("search_started", {
           queryId: plan.id,
@@ -47,7 +62,7 @@ export class OpenAiSearchProvider implements SearchProvider {
           filters: plan.allowedDomains?.length
             ? { allowed_domains: plan.allowedDomains }
             : undefined,
-          search_context_size: "medium",
+          search_context_size: searchContextSize,
           user_location: {
             type: "approximate",
             country: "US",
@@ -59,7 +74,7 @@ export class OpenAiSearchProvider implements SearchProvider {
       },
     });
 
-    const parsed = response.output_parsed;
+    const parsed = response.output_parsed as z.infer<typeof signalSchema> | null;
 
     if (this.trace) {
       const baseName = this.trace.queryBaseName(plan.id);

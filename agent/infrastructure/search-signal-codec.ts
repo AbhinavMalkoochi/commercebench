@@ -29,6 +29,26 @@ export const signalSchema = z.object({
 
 type ParsedSignal = z.infer<typeof signalSchema>["signals"][number];
 
+const GENERIC_CATEGORY_LABELS = new Set([
+  "casual dresses",
+  "earphones and headphones",
+  "lipstick and lip gloss",
+  "necklaces",
+  "perfume",
+  "phone cases and protectors",
+  "serums and essences",
+  "sunglasses",
+  "t shirts",
+]);
+
+function normalizeLooseLabel(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
 function normalizeTags(tags: string[], label: string): string[] {
   const raw = [...tags, ...label.toLowerCase().split(/[^a-z0-9]+/g)];
   return [...new Set(raw.map((tag) => tag.trim().toLowerCase()).filter(Boolean))].slice(0, 8);
@@ -51,7 +71,8 @@ function buildSourceSpecificInstructions(sourceId: SourceId): string[] {
     case "tiktok_creative_center":
       return [
         "Focus on live TikTok Creative Center and closely related commerce sources.",
-        "Return concrete shoppable products or product categories, not analytics surfaces.",
+        "Return concrete shoppable products only, not broad merchandising categories.",
+        "If the source only shows a broad category like perfume or t-shirts, omit it unless the page proves a specific product formulation.",
       ];
     case "tiktok_shop_search":
       return [
@@ -90,11 +111,12 @@ function buildSourceSpecificInstructions(sourceId: SourceId): string[] {
 export function buildSearchInstructions(plan: QueryPlan, now: Date): string {
   return [
     "Search for live ecommerce product signals.",
-    "Return only products or product categories that appear current for this month or the last 7 days.",
+    "Return only concrete shoppable products that appear current for this month or the last 7 days.",
     "Reject regulated or restricted categories.",
     "Prefer products that are visually demonstrable on TikTok and realistically sellable under $100.",
     "Do not invent evidence. If evidence is weak or stale, omit the product.",
     "Use short normalized labels such as 'pimple patches' or 'heatless curlers'.",
+    "Do not return broad merchandising categories like perfume, t-shirts, lipstick and lip gloss, or serums and essences.",
     "Ignore platform help pages, advertiser docs, incentive pages, creator program docs, and analytics product pages.",
     "Every signal must include tags as an array, sourceUrl as a URL or null, and priceMin/priceMax as numbers or null.",
     "Every signal must include sourceTitle as a string or null, sourcePublishedAt as an ISO date string or null, and freshnessNote as a short explanation or null.",
@@ -129,6 +151,15 @@ function isObviousPlatformNoise(signal: ParsedSignal): boolean {
   ].some((pattern) => combined.includes(pattern));
 }
 
+function isGenericCategoryLabel(signal: ParsedSignal, sourceId: SourceId): boolean {
+  if (sourceId !== "tiktok_creative_center" && sourceId !== "shopify_tiktok_products") {
+    return false;
+  }
+
+  const normalizedLabel = normalizeLooseLabel(signal.label);
+  return GENERIC_CATEGORY_LABELS.has(normalizedLabel);
+}
+
 export function mapParsedSignals(
   plan: QueryPlan,
   now: Date,
@@ -137,6 +168,7 @@ export function mapParsedSignals(
 ): ResearchSignal[] {
   return parsedSignals
     .filter((signal) => !isObviousPlatformNoise(signal))
+    .filter((signal) => !isGenericCategoryLabel(signal, plan.sourceId))
     .map((signal, index) => ({
       id: `${plan.id}-search-signal-${index + 1}`,
       kind: "candidate" as const,
