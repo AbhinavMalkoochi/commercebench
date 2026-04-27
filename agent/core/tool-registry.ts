@@ -13,6 +13,7 @@ import { createPrintfulStoreProductTool } from "@/agent/tools/create-printful-st
 import { createTikTokProductTool } from "@/agent/tools/create-tiktok-product";
 import { activateTikTokProductsTool } from "@/agent/tools/activate-tiktok-products";
 import { deactivateTikTokProductsTool } from "@/agent/tools/deactivate-tiktok-products";
+import { deleteTikTokProductsTool } from "@/agent/tools/delete-tiktok-products";
 import { getCjAccessTokenTool } from "@/agent/tools/get-cj-access-token";
 import { getCjBalanceTool } from "@/agent/tools/get-cj-balance";
 import { getCjOrderDetailTool } from "@/agent/tools/get-cj-order-detail";
@@ -41,6 +42,7 @@ const REGISTERED_TOOLS = [
   createPrintfulStoreProductTool,
   createTikTokProductTool,
   deactivateTikTokProductsTool,
+  deleteTikTokProductsTool,
   getCjAccessTokenTool,
   getCjBalanceTool,
   getCjOrderDetailTool,

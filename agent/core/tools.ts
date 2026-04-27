@@ -254,6 +254,20 @@ export interface DeactivateTikTokProductsOutput {
   productIds: string[];
 }
 
+export interface DeleteTikTokProductsInput {
+  appKey: string;
+  appSecret: string;
+  accessToken: string;
+  shopCipher: string;
+  productIds: string[];
+}
+
+export interface DeleteTikTokProductsOutput {
+  fetchedAt: string;
+  sourceUrl: string;
+  productIds: string[];
+}
+
 export interface RunRemoteShellCommandInput {
   command: string;
   workingDirectory?: string;
@@ -733,6 +747,10 @@ export type AgentToolMap = {
   deactivate_tiktok_products: {
     input: DeactivateTikTokProductsInput;
     output: DeactivateTikTokProductsOutput;
+  };
+  delete_tiktok_products: {
+    input: DeleteTikTokProductsInput;
+    output: DeleteTikTokProductsOutput;
   };
   run_remote_shell_command: {
     input: RunRemoteShellCommandInput;

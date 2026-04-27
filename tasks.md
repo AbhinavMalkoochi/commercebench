@@ -35,6 +35,7 @@ Run the agent 24/7 on a backend server so it can:
 - [x] Operator guide for production setup, credentials, and deployment handoff
 - [x] Persistent product mapping store between research candidate, TikTok product, and CJ SKU
 - [x] Dashboard visibility for persistent product mappings
+- [x] TikTok product deactivation and delete flows for pivots
 
 ## In Progress
 
@@ -45,7 +46,6 @@ Run the agent 24/7 on a backend server so it can:
 
 ## Remaining Build Tasks
 
-- [ ] TikTok product deactivation and delete flows for pivots
 - [ ] Warehouse and delivery-option aware fulfillment configuration per shop
 - [ ] Product/category compliance hard-blocks for restricted or risky categories
 - [ ] Creator-affiliate activation workflow beyond discovery-only scraping

@@ -506,6 +506,15 @@ async function main(): Promise<void> {
       });
     }
 
+    if (url.includes("/product/202309/products/delete")) {
+      return new Response(JSON.stringify({ code: 0, message: "success", data: {} }), {
+        status: 200,
+        headers: {
+          "content-type": "application/json",
+        },
+      });
+    }
+
     if (url.includes("/product/202309/products")) {
       return new Response(JSON.stringify(TIKTOK_CREATE_PRODUCT_FIXTURE), {
         status: 200,
@@ -963,6 +972,21 @@ async function main(): Promise<void> {
     },
   );
 
+  const deletedProducts = await executor.execute(
+    "delete_tiktok_products",
+    {
+      appKey: "tt-app-key",
+      appSecret: "tt-app-secret",
+      accessToken: "tts-access-token",
+      shopCipher: "cipher-123",
+      productIds: ["tts-prod-created-1"],
+    },
+    {
+      now: new Date("2026-04-26T00:00:00.000Z"),
+      fetchImpl: productCreationFetch,
+    },
+  );
+
   const previousRemoteShellMode = process.env.AGENT_REMOTE_SHELL_MODE;
   try {
     process.env.AGENT_REMOTE_SHELL_MODE = "local";
@@ -983,12 +1007,12 @@ async function main(): Promise<void> {
     }
   }
 
-  assert.equal(registry.listTools().length, 26);
+  assert.equal(registry.listTools().length, 27);
   assert.equal(registry.listToolsForStage("research").length, 1);
   assert.equal(registry.listToolsForStage("product_creation").length, 10);
   assert.equal(registry.listToolsForStage("listing").length, 9);
   assert.equal(registry.listToolsForStage("monitoring").length, 4);
-  assert.equal(registry.listToolsForStage("pivoting").length, 1);
+  assert.equal(registry.listToolsForStage("pivoting").length, 2);
   assert.equal(fetchResult.title, "Research Fixture");
   assert.equal(fetchResult.text.includes("Current page text"), true);
   assert.equal(printfulProducts.products[0]?.name, "Unisex Staple T-Shirt");
@@ -1014,6 +1038,7 @@ async function main(): Promise<void> {
   assert.equal(tiktokCreateProduct.productId, "tts-prod-created-1");
   assert.equal(activatedProducts.productIds[0], "tts-prod-created-1");
   assert.equal(deactivatedProducts.productIds[0], "tts-prod-created-1");
+  assert.equal(deletedProducts.productIds[0], "tts-prod-created-1");
   assert.equal(mockupTaskResult.assets[0]?.mockupUrl, "https://example.com/mockup.png");
   assert.equal(storeProduct.productId, 7001);
   assert.equal(cjProducts.products[0]?.productId, "cj-123");
