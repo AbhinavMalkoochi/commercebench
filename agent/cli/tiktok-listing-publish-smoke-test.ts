@@ -113,6 +113,41 @@ async function main(): Promise<void> {
   assert.equal(result.categoryId, "cat-1");
   assert.equal(result.imageUris?.[0], "img-uri-1");
 
+  const blockedResult = await new TikTokListingPublisher().publish({
+    draft: {
+      ...listingDraft,
+      artifact: {
+        ...listingDraft.artifact!,
+        title: "Prescription acne treatment",
+        description: "Prescription-strength treatment for acne.",
+        tags: ["medical", "skincare"],
+      },
+    },
+    productExecution,
+    config: {
+      appKey: "tt-app-key",
+      appSecret: "tt-app-secret",
+      accessToken: "tt-access-token",
+      shopCipher: "cipher-123",
+      currency: "USD",
+      defaultInventoryQuantity: 25,
+      packageWeightValue: "0.3",
+      packageWeightUnit: "KILOGRAM",
+      packageLength: "20",
+      packageWidth: "15",
+      packageHeight: "5",
+      packageDimensionUnit: "CENTIMETER",
+      activateAfterCreate: true,
+    },
+    toolContext: {
+      now: new Date("2026-04-26T00:00:00.000Z"),
+      fetchImpl,
+    },
+  });
+
+  assert.equal(blockedResult.status, "blocked");
+  assert.equal(blockedResult.reasoning.includes("restricted product category"), true);
+
   console.log("TikTok listing publish smoke test passed.");
 }
 

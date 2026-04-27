@@ -2,7 +2,7 @@ import { ToolExecutor } from "@/agent/core/tool-executor";
 import { DefaultToolPolicy } from "@/agent/core/tool-policy";
 import { createDefaultToolRegistry } from "@/agent/core/tool-registry";
 import { AgentToolExecutionContext } from "@/agent/core/tools";
-import { ListingDraftResult, ProductExecutionResult, TikTokListingExecutionResult } from "@/agent/core/types";
+import { ListingDraftResult, ProductExecutionResult, RESTRICTED_PRODUCT_KEYWORDS, TikTokListingExecutionResult } from "@/agent/core/types";
 
 export interface TikTokListingPublishConfig {
   appKey: string;
@@ -25,6 +25,24 @@ export class TikTokListingPublisher {
   private readonly executor = new ToolExecutor(createDefaultToolRegistry());
   private readonly policy = new DefaultToolPolicy();
 
+  private hasRestrictedContent(input: {
+    title: string;
+    subtitle: string;
+    description: string;
+    bullets: string[];
+    tags: string[];
+  }): boolean {
+    const combined = [
+      input.title,
+      input.subtitle,
+      input.description,
+      ...input.bullets,
+      ...input.tags,
+    ].join(" ").toLowerCase();
+
+    return RESTRICTED_PRODUCT_KEYWORDS.some((keyword) => combined.includes(keyword));
+  }
+
   async publish(input: {
     draft?: ListingDraftResult;
     productExecution?: ProductExecutionResult;
@@ -43,6 +61,13 @@ export class TikTokListingPublisher {
       return {
         status: "skipped",
         reasoning: "TikTok listing publish requires a prepared listing draft artifact.",
+      };
+    }
+
+    if (this.hasRestrictedContent(artifact)) {
+      return {
+        status: "blocked",
+        reasoning: "TikTok listing publish blocked the draft because it appears to fall into a restricted product category.",
       };
     }
 
