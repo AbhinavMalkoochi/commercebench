@@ -1,6 +1,8 @@
+import path from "node:path";
 import { load } from "cheerio";
 
 import { HtmlSourceClient, SourceDocument } from "@/agent/core/types";
+import { FileResearchTrace } from "@/agent/infrastructure/file-research-trace";
 import { withRetries } from "@/agent/infrastructure/retry";
 
 function extractStructuredText(html: string): string {
@@ -27,6 +29,8 @@ function extractStructuredText(html: string): string {
 }
 
 export class LiveHtmlSourceClient implements HtmlSourceClient {
+  constructor(private readonly trace?: FileResearchTrace) {}
+
   async fetchDocument(url: string): Promise<SourceDocument> {
     return withRetries(async () => {
       const response = await fetch(url, {
@@ -41,11 +45,26 @@ export class LiveHtmlSourceClient implements HtmlSourceClient {
       }
 
       const html = await response.text();
+      const text = extractStructuredText(html);
+
+      if (this.trace) {
+        const baseName = this.trace.htmlBaseName(url);
+        await Promise.all([
+          this.trace.writeText(path.join("html", `${baseName}.html`), html),
+          this.trace.writeText(path.join("html", `${baseName}.txt`), text),
+          this.trace.recordEvent("html_fetched", {
+            url,
+            baseName,
+            htmlBytes: html.length,
+            textBytes: text.length,
+          }),
+        ]);
+      }
 
       return {
         url,
         html,
-        text: extractStructuredText(html),
+        text,
         fetchedAt: new Date().toISOString(),
       };
     });

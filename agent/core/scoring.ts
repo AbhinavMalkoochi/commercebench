@@ -34,7 +34,9 @@ function unique<T>(values: Iterable<T>): T[] {
 }
 
 function normalizeLabel(label: string): string {
-  return label
+  const primaryVariant = label.split(/\s*\/\s*/u)[0] ?? label;
+
+  return primaryVariant
     .toLowerCase()
     .replace(/&/g, "and")
     .replace(/[^a-z0-9]+/g, "-")

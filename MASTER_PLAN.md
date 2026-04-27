@@ -117,6 +117,9 @@ The repository already has a working research-first kernel.
 - Search-backed research quality gating is in place.
 - The runtime now rejects stale, weakly cited, or low-substance signals before scoring.
 - An audit CLI exists to inspect the latest saved research run.
+- Current-month roundup pages can now satisfy freshness even when the published timestamp is older than the freshness window, as long as the source still explicitly names the active month.
+- Slash-separated label variants now collapse to a single candidate key, which improves cross-source merging for labels like `Portable Blender / Juice Cup`.
+- Live source timeout is now configurable through `AGENT_SOURCE_TIMEOUT_MS` and defaults to a less brittle 180 seconds.
 
 ### Product Creation Baseline
 
@@ -163,10 +166,16 @@ This is the first step toward a general tool plane where the agent can select na
 - Added a live Next.js control-room dashboard over `.agent-state/live`, an approval-gated remote shell tool for the hosted server, and a long-running agent daemon plus Docker Compose hosting baseline.
 - Added TikTok order visibility with an SDK-backed order search tool and a webhook ingest route that writes order-status payloads into the dashboard trail.
 - Added CJ monitoring primitives for order list and order detail, plus a first runtime pass that turns observed TikTok orders into unpaid CJ drafts and records reconciliation details per cycle.
+- Added TikTok Shop SDK-backed warehouse lookup, category recommendation, product image upload, product creation, and activate/deactivate tools.
+- Added a `TikTokListingPublisher` service so CJ-backed listing drafts can be turned into real TikTok Shop products when listing credentials are configured.
+- Extended the live runner, hosted daemon, and dashboard so each cycle records listing publish outcomes alongside research, CJ execution, and order sync state.
+- Added shared CLI env loading via `@next/env` so standalone agent commands read the same project `.env` configuration as the Next.js app.
 - Added a smoke test in `agent/cli/cj-draft-inspector-smoke-test.ts`.
 - Added a smoke test in `agent/cli/cj-draft-executor-smoke-test.ts`.
+- Added a smoke test in `agent/cli/tiktok-listing-publish-smoke-test.ts`.
 - Added the command `npm run agent:cj:inspect:test`.
 - Added the command `npm run agent:cj:execute:test`.
+- Added the command `npm run agent:tiktok:listing:test`.
 
 ### Budget Control Baseline
 
@@ -224,7 +233,7 @@ Tasks:
 3. Add a product execution result type that records selected CJ products, variants where applicable, pricing, and downstream listing inputs.
 4. Keep payment steps explicitly gated and manual-only.
 
-The first CJ sourcing read slice, the first CJ auth/token slice, the first CJ executor slice, the first TikTok listing-auth slice, the first CJ-to-TikTok listing-prep slice, and the first unpaid CJ order-draft slice are now implemented. Full CJ execution and TikTok product creation still remain next.
+The first CJ sourcing read slice, the first CJ auth/token slice, the first CJ executor slice, the first TikTok listing-auth slice, the first CJ-to-TikTok listing-prep slice, the first unpaid CJ order-draft slice, and the first live TikTok product creation slice are now implemented. Real seller validation, listing edits, and policy-driven deactivation remain next.
 
 ### Hosting And Operations Baseline
 
@@ -250,6 +259,8 @@ Tasks:
 1. Replace the fixed query planner with a research agenda generator.
 2. Allow the agent to choose follow-up research based on evidence gaps.
 3. Keep only a thin deterministic floor for safety and minimum evidence classes.
+
+Immediate blocker observed in the latest live run: the runner now executes successfully with `.env` loading, accepts current-month CJ roundup signals, and waits longer for slow sources, but it can still block at `blocked_low_signal` when real sources return different product clusters in the same run. The next reliability slice is stronger cross-source normalization and source prioritization so the loop converges on overlapping products instead of unrelated but individually strong signals.
 
 ### Phase 4. Add Budget, Approvals, And Circuit Breakers
 

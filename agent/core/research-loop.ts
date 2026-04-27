@@ -20,7 +20,17 @@ export interface ResearchLoopDependencies {
   trace?: FileResearchTrace;
 }
 
-const SOURCE_OPERATION_TIMEOUT_MS = 90_000;
+const DEFAULT_SOURCE_OPERATION_TIMEOUT_MS = 180_000;
+
+function getSourceOperationTimeoutMs(): number {
+  const configuredValue = Number(process.env.AGENT_SOURCE_TIMEOUT_MS);
+
+  if (Number.isFinite(configuredValue) && configuredValue >= 30_000) {
+    return configuredValue;
+  }
+
+  return DEFAULT_SOURCE_OPERATION_TIMEOUT_MS;
+}
 
 async function withTimeout<T>(operation: Promise<T>, timeoutMs: number, label: string): Promise<T> {
   return await Promise.race([
@@ -53,6 +63,7 @@ export async function runResearchLoop(
 ): Promise<ResearchCycleResult> {
   const startedAt = now.toISOString();
   const queries = buildResearchQueryPlan(now);
+  const sourceOperationTimeoutMs = getSourceOperationTimeoutMs();
 
   await dependencies.trace?.writeJson("loop/query-plan.json", queries);
   await dependencies.trace?.recordEvent("research_loop_started", {
@@ -75,7 +86,7 @@ export async function runResearchLoop(
       try {
         const searchSignals = await withTimeout(
           dependencies.searchProvider.searchSignals(query, now),
-          SOURCE_OPERATION_TIMEOUT_MS,
+          sourceOperationTimeoutMs,
           query.sourceId,
         );
         await dependencies.trace?.recordEvent("query_completed", {

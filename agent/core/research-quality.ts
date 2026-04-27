@@ -21,6 +21,34 @@ function isOfficialFreshSurface(hostname: string | undefined): boolean {
   return hostname === "ads.tiktok.com" || hostname === "shop.tiktok.com";
 }
 
+function formatMonthYearTokens(now: Date): { month: string; year: string } {
+  const month = new Intl.DateTimeFormat("en-US", { month: "long" }).format(now).toLowerCase();
+  const year = new Intl.DateTimeFormat("en-US", { year: "numeric" }).format(now);
+
+  return { month, year };
+}
+
+function hasCurrentMonthYearReference(value: string | undefined, now: Date): boolean {
+  if (!value) {
+    return false;
+  }
+
+  const normalized = value.toLowerCase();
+  const { month, year } = formatMonthYearTokens(now);
+
+  return normalized.includes(month) && normalized.includes(year);
+}
+
+function hasExplicitCurrentMonthFreshness(signal: ResearchSignal, query: QueryPlan, now: Date): boolean {
+  if (!hasCurrentMonthYearReference(query.query, now)) {
+    return false;
+  }
+
+  return [signal.sourceTitle, signal.sourceUrl, signal.freshnessNote].some((value) =>
+    hasCurrentMonthYearReference(value, now),
+  );
+}
+
 function countSubstantiveMetrics(signal: ResearchSignal): number {
   const metricValues = [
     signal.metrics.visualDemo,
@@ -34,25 +62,26 @@ function countSubstantiveMetrics(signal: ResearchSignal): number {
   return metricValues.filter((value) => value >= 0.05).length;
 }
 
-function isRecentEnough(signal: ResearchSignal, now: Date, freshnessWindowDays: number): boolean {
+function isRecentEnough(signal: ResearchSignal, now: Date, query: QueryPlan): boolean {
   const hostname = parseHostname(signal.sourceUrl);
+  const hasCurrentMonthMarker = hasExplicitCurrentMonthFreshness(signal, query, now);
 
   if (isOfficialFreshSurface(hostname)) {
     return true;
   }
 
   if (!signal.sourcePublishedAt) {
-    return false;
+    return hasCurrentMonthMarker;
   }
 
   const publishedAt = new Date(signal.sourcePublishedAt);
 
   if (Number.isNaN(publishedAt.getTime())) {
-    return false;
+    return hasCurrentMonthMarker;
   }
 
-  const freshnessWindowMs = freshnessWindowDays * 24 * 60 * 60 * 1000;
-  return now.getTime() - publishedAt.getTime() <= freshnessWindowMs;
+  const freshnessWindowMs = (query.freshnessWindowDays ?? 30) * 24 * 60 * 60 * 1000;
+  return now.getTime() - publishedAt.getTime() <= freshnessWindowMs || hasCurrentMonthMarker;
 }
 
 function collectSignalIssues(signal: ResearchSignal, now: Date, query: QueryPlan): string[] {
@@ -79,7 +108,7 @@ function collectSignalIssues(signal: ResearchSignal, now: Date, query: QueryPlan
     issues.push("missing_freshness_note");
   }
 
-  if (!isRecentEnough(signal, now, query.freshnessWindowDays ?? 30)) {
+  if (!isRecentEnough(signal, now, query)) {
     issues.push("stale_or_unverified_freshness");
   }
 

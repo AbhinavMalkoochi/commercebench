@@ -32,6 +32,14 @@ async function main(): Promise<void> {
   assert.equal(record.result.status, "passed");
   assert.ok(selected, "Expected a selected candidate.");
   assert.equal(selected.label, "Hydrocolloid Pimple Patches");
+  assert.ok(
+    selected.sourceIds.includes("cj_tiktok_products"),
+    "Expected the winner to be corroborated by the CJ TikTok source.",
+  );
+  assert.ok(
+    selected.sourceIds.length >= 3,
+    "Expected the winner to be confirmed by at least three distinct sources.",
+  );
   assert.equal(record.productCreation?.plan.status, "draft_ready");
   assert.equal(record.productCreation?.plan.draft?.fulfillmentProvider, "cj_dropshipping");
   assert.equal(record.listingDraft?.status, "skipped");

@@ -276,6 +276,43 @@ export class FixtureSearchProvider implements SearchProvider {
             sourceUrl: "https://ads.tiktok.com/business/creativecenter/inspiration/popular/hashtag/pc/en",
           }),
         ];
+      case "cj_tiktok_products":
+        return [
+          fixtureSignal(plan, 1, {
+            label: "Hydrocolloid Pimple Patches",
+            summary: "CJ's April 2026 TikTok-focused supplier roundup still highlights pimple patches as a low-cost, repeatable beauty impulse buy with strong demo potential.",
+            tags: ["cj", "supplier", "skincare", "beauty"],
+            sourceTitle: "Best Top Dropshipping Products April 2026",
+            freshnessNote: "Supplier roundup for April 2026 with TikTok-oriented demand commentary.",
+            freshness: 0.82,
+            visualDemo: 0.86,
+            creatorAppeal: 0.78,
+            purchaseIntent: 0.8,
+            priceFit: 0.95,
+            saturationResistance: 0.55,
+            seasonality: 0.8,
+            confidence: 0.84,
+            priceMax: 16,
+            sourceUrl: "https://cjdropshipping.com/blogs/winning-products/Best-Top-Dropshipping-Products-April-2026",
+          }),
+          fixtureSignal(plan, 2, {
+            label: "Scalp Serum Applicator Tools",
+            summary: "Supplier-side signal for hair-care routine tools with decent creator fit but lower impulse strength than pimple patches.",
+            tags: ["cj", "hair", "beauty", "routine"],
+            sourceTitle: "Best Top Dropshipping Products April 2026",
+            freshnessNote: "Supplier roundup for April 2026 with TikTok-oriented demand commentary.",
+            freshness: 0.79,
+            visualDemo: 0.78,
+            creatorAppeal: 0.73,
+            purchaseIntent: 0.7,
+            priceFit: 0.83,
+            saturationResistance: 0.62,
+            seasonality: 0.74,
+            confidence: 0.8,
+            priceMax: 25,
+            sourceUrl: "https://cjdropshipping.com/blogs/winning-products/Best-Top-Dropshipping-Products-April-2026",
+          }),
+        ];
       default:
         return [];
     }
